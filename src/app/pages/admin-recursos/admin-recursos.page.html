@@ -1,0 +1,58 @@
+<ion-content>
+  <div class="nx-pagina">
+
+    <div class="nx-encabezado">
+      <div class="nx-titulo">
+        <img src="assets/img/nexora-logo.png" alt="Nexora">
+        <h1>Recursos</h1>
+      </div>
+      <span class="nx-insignia">Administrador</span>
+    </div>
+
+    <input class="nx-input" type="search" placeholder="Buscar por nombre o código"
+           aria-label="Buscar recurso" [(ngModel)]="texto" (ngModelChange)="filtrar()">
+
+    <div class="nx-chips">
+      @for (c of categorias; track c) {
+        <button class="nx-chip" [class.activo]="categoria === c" (click)="elegirCategoria(c)">{{ c }}</button>
+      }
+    </div>
+
+    <button class="nx-boton" routerLink="/nuevo-recurso">
+      <ion-icon name="add-outline"></ion-icon> Nuevo recurso
+    </button>
+
+    <p class="nx-gris">{{ recursos.length }} recursos</p>
+
+    @for (r of recursos; track r.codigo) {
+      <div class="nx-tarjeta recurso">
+        <div class="nx-encabezado">
+          <div>
+            <strong>{{ r.nombre }}</strong>
+            <p class="nx-gris">{{ r.codigo }} · {{ r.ubicacion }}</p>
+          </div>
+          <span class="nx-estado {{ claseEstado(r.estado) }}">{{ r.estado }}</span>
+        </div>
+        <div class="acciones">
+          <button class="nx-boton-sec" (click)="editar(r)">Editar</button>
+          <button class="nx-boton-sec eliminar" [disabled]="r.estado === 'Prestado'" (click)="eliminar(r)">Eliminar</button>
+        </div>
+        @if (r.estado === 'Prestado') {
+          <p class="aviso">No se puede eliminar: tiene un préstamo activo.</p>
+        }
+      </div>
+    } @empty {
+      <p class="nx-gris">No hay recursos con ese filtro.</p>
+    }
+
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <nav class="nx-barra">
+    <a routerLink="/admin-recursos" class="activa"><ion-icon name="cube-outline"></ion-icon>Recursos</a>
+    <a routerLink="/usuarios"><ion-icon name="people-outline"></ion-icon>Usuarios</a>
+    <a routerLink="/reportes"><ion-icon name="bar-chart-outline"></ion-icon>Reportes</a>
+    <a routerLink="/login"><ion-icon name="log-out-outline"></ion-icon>Salir</a>
+  </nav>
+</ion-footer>

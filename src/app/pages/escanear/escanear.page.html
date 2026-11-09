@@ -1,0 +1,74 @@
+<ion-content>
+  <div class="nx-pagina">
+
+    <div class="nx-encabezado">
+      <div class="nx-titulo">
+        <img src="assets/img/nexora-logo.png" alt="Nexora">
+        <h1>Escanear recurso</h1>
+      </div>
+      <span class="nx-insignia">Encargado</span>
+    </div>
+
+    <!-- Préstamo / Devolución -->
+    <div class="modos">
+      <button [class.activo]="modo === 'prestamo'" (click)="cambiarModo('prestamo')">Préstamo</button>
+      <button [class.activo]="modo === 'devolucion'" (click)="cambiarModo('devolucion')">Devolución</button>
+    </div>
+
+    <!-- Zona de cámara -->
+    <div class="camara">
+      <div class="marco">
+        <ion-icon name="qr-code-outline"></ion-icon>
+      </div>
+      <p>Apunta la cámara al código del recurso</p>
+    </div>
+
+    <!-- Código escrito a mano -->
+    <div class="buscar">
+      <input class="nx-input" type="text" placeholder="O escribe el código (ej. AV-0041)"
+             aria-label="Código del recurso" [(ngModel)]="codigo">
+      <button class="nx-boton-sec" (click)="buscar()">Buscar</button>
+    </div>
+
+    @if (mensaje !== '') {
+      <p class="mensaje">{{ mensaje }}</p>
+    }
+
+    <!-- Resultado -->
+    @if (recurso) {
+      <div class="nx-tarjeta resultado">
+        <div class="nx-encabezado">
+          <div>
+            <strong>{{ recurso.nombre }}</strong>
+            <p class="nx-gris">{{ recurso.ubicacion }} · {{ recurso.codigo }}</p>
+          </div>
+          <span class="nx-estado {{ claseEstado(recurso.estado) }}">{{ recurso.estado }}</span>
+        </div>
+
+        @if (modo === 'devolucion') {
+          <div class="nx-campo">
+            <label class="nx-label" for="estadoDev">¿En qué estado se recibe?</label>
+            <select id="estadoDev" class="nx-input" [(ngModel)]="estadoDevolucion">
+              <option value="Bueno">Bueno</option>
+              <option value="Dañado">Dañado</option>
+            </select>
+          </div>
+        }
+
+        <button class="nx-boton" (click)="registrar()">
+          {{ modo === 'prestamo' ? 'Registrar préstamo' : 'Registrar devolución' }}
+        </button>
+      </div>
+    }
+
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <nav class="nx-barra">
+    <a routerLink="/escanear" class="activa"><ion-icon name="scan-outline"></ion-icon>Escanear</a>
+    <a routerLink="/gestion-reservas"><ion-icon name="list-outline"></ion-icon>Solicitudes</a>
+    <a routerLink="/admin-recursos"><ion-icon name="cube-outline"></ion-icon>Inventario</a>
+    <a routerLink="/login"><ion-icon name="log-out-outline"></ion-icon>Salir</a>
+  </nav>
+</ion-footer>

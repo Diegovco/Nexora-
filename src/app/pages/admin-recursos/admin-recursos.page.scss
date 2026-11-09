@@ -1,0 +1,21 @@
+.recurso {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.recurso strong {
+  font-size: 15px;
+  color: #FFFFFF;
+}
+.acciones {
+  display: flex;
+  gap: 8px;
+}
+.eliminar {
+  color: #FF9A94;
+}
+.aviso {
+  margin: 0;
+  font-size: 12px;
+  color: #F7C36B;
+}

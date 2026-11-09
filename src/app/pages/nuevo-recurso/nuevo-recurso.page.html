@@ -1,0 +1,63 @@
+<ion-content>
+  <div class="nx-pagina">
+
+    <div class="nx-titulo">
+      <button class="volver" (click)="cancelar()" aria-label="Volver">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </button>
+      <h1>{{ editando ? 'Editar recurso' : 'Nuevo recurso' }}</h1>
+    </div>
+
+    <div class="nx-campo">
+      <label class="nx-label" for="nombre">Nombre del recurso</label>
+      <input id="nombre" class="nx-input" type="text" placeholder="Ej. Kit Arduino Uno" [(ngModel)]="nombre">
+    </div>
+
+    <div class="nx-campo">
+      <span class="nx-label">Categoría</span>
+      <div class="nx-chips">
+        @for (c of categorias; track c) {
+          <button type="button" class="nx-chip" [class.activo]="categoria === c"
+                  [disabled]="editando" (click)="elegirCategoria(c)">{{ c }}</button>
+        }
+      </div>
+    </div>
+
+    <div class="dos-columnas">
+      <div class="nx-campo">
+        <label class="nx-label" for="ubicacion">Ubicación</label>
+        <select id="ubicacion" class="nx-input" [(ngModel)]="ubicacion">
+          @for (u of ubicaciones; track u) {
+            <option [value]="u">{{ u }}</option>
+          }
+        </select>
+      </div>
+      <div class="nx-campo">
+        <label class="nx-label" for="cantidad">Cantidad</label>
+        <input id="cantidad" class="nx-input" type="number" min="1" [(ngModel)]="cantidad">
+      </div>
+    </div>
+
+    <div class="nx-campo">
+      <label class="nx-label" for="descripcion">Descripción</label>
+      <textarea id="descripcion" class="nx-input area" rows="3"
+                placeholder="Ej. Placa, cable USB y protoboard" [(ngModel)]="descripcion"></textarea>
+    </div>
+
+    <div class="nx-tarjeta qr">
+      <ion-icon name="qr-code-outline"></ion-icon>
+      <div>
+        <strong>Código {{ codigoVista }}</strong>
+        <p class="nx-gris">Se genera al guardar. Imprime la etiqueta y pégala en el recurso.</p>
+      </div>
+    </div>
+
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <div class="botones">
+    <button class="nx-boton-sec" (click)="cancelar()">Cancelar</button>
+    <button class="nx-boton" (click)="guardar()">Guardar</button>
+  </div>
+</ion-footer>
