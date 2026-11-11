@@ -1,13 +1,115 @@
-<ion-header [translucent]="true">
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>inicio</ion-title>
+    <div class="logo-container" slot="start">
+      <div class="logo">
+        <img src="assets/img/nexora-logo.png" alt="Nexora Logo"/>
+      </div>
+      <h1 class="app-title">NEXORA</h1>
+    </div>
+
+    <ion-buttons slot="end">
+      <ion-button class="notification-btn">
+        <ion-icon name="notifications-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">inicio</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="login-fondo">
+  <!-- Se agrega la clase 'row' y se quita el punto de '.col-4' -->
+
+  <div class="container text-center">
+    <div class="row justify-content-center">
+      <div class="peticiones col-3">
+        <h2>2/3</h2>
+        <p>Peticiones</p>
+      </div>
+
+      <div class="peticiones col-3">
+        <h2>1</h2>
+        <p>Reservas hoy</p>
+      </div>
+
+      <div class="peticiones col-3">
+        <h2>#2</h2>
+        <p>En espera</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección: Tarjeta de Próxima Reserva -->
+  <div class="container text-center">
+    <div class="row justify-content-center">
+      <div class="reservas col-10">
+        <div class="reserva-header d-flex justify-content-between align-items-center">
+          <span class="sub-label">PRÓXIMA RESERVA</span>
+          <span class="badge-estado">Aprobada</span>
+        </div>
+        <h2>Laboratorio de Cómputo 2</h2>
+        <p>Hoy · 12:00 – 13:30 · Edificio B</p>
+      </div>
+    </div> <!-- <- Este div era el que faltaba -->
+  </div>
+
+  <!-- Sección: Disponibles ahora -->
+  <div class="container mt-3">
+    <div class="row justify-content-center">
+      <div class="col-10 d-flex justify-content-between align-items-center mb-2">
+        <h3 class="titulo-seccion">Disponibles ahora</h3>
+        <a routerLink="/tabs/catalogo" class="link-catalogo">Ver catálogo</a>
+      </div>
+    </div>
+
+    <!-- Item 1 -->
+    <div class="row justify-content-center mb-2">
+      <div class="item-card col-10 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+          <div class="icon-box me-3">LIB</div>
+          <div class="text-start">
+            <h4 class="item-title">Estructura de datos en Java</h4>
+            <p class="item-subtitle">Biblioteca · 3 ejemplares</p>
+          </div>
+        </div>
+        <button class="btn-reservar">Reservar</button>
+      </div>
+    </div>
+
+    <!-- Item 2 -->
+    <div class="row justify-content-center mb-2">
+      <div class="item-card col-10 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+          <div class="icon-box me-3">AV</div>
+          <div class="text-start">
+            <h4 class="item-title">Bocina Bluetooth JBL</h4>
+            <p class="item-subtitle">Almacén audiovisual</p>
+          </div>
+        </div>
+        <button class="btn-reservar">Reservar</button>
+      </div>
+    </div>
+
+    <!-- Item 3 -->
+    <div class="row justify-content-center mb-2">
+      <div class="item-card col-10 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+          <div class="icon-box me-3">LAB</div>
+          <div class="text-start">
+            <h4 class="item-title">Laboratorio de Electrónica</h4>
+            <p class="item-subtitle">Edificio D · Libre hasta 16:00</p>
+          </div>
+        </div>
+        <button class="btn-reservar">Reservar</button>
+      </div>
+    </div>
+  </div>
+
 </ion-content>
+
+<ion-footer class="ion-no-border">
+  <nav class="nx-barra">
+    <a routerLink="/escanear" class="activa"><ion-icon name="scan-outline"></ion-icon>Escanear</a>
+    <a routerLink="/gestion-reservas"><ion-icon name="list-outline"></ion-icon>Solicitudes</a>
+    <a routerLink="/admin-recursos"><ion-icon name="cube-outline"></ion-icon>Inventario</a>
+    <a routerLink="/login"><ion-icon name="log-out-outline"></ion-icon>Salir</a>
+  </nav>
+</ion-footer>

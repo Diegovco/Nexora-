@@ -15,8 +15,8 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/registro/registro.page').then((m) => m.RegistroPage),
   },
   {
-    path: 'inicio',
-    loadComponent: () => import('./pages/inicio/inicio.page').then((m) => m.InicioPage),
+  path: 'inicio',
+  loadComponent: () => import('./pages/inicio/inicio.page').then((m) => m.InicioPage),
   },
   {
     path: 'recursos',
@@ -61,5 +61,5 @@ export const routes: Routes = [
   {
     path: 'nuevo-recurso',
     loadComponent: () => import('./pages/nuevo-recurso/nuevo-recurso.page').then((m) => m.NuevoRecursoPage),
-  },
+  }
 ];

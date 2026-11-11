@@ -1,0 +1,191 @@
+ion-toolbar {
+  --background: #0a121e;
+  --border-color: #1e293b;
+  --color: #ffffff;
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #0f172a;
+  border: 2px solid #1e293b;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.app-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+/* Estilo para el botón circular de notificación */
+.notification-btn {
+  --color: #94a3b8;
+  --background: #1e293b;
+  --border-radius: 50%;
+  width: 40px;
+  height: 40px;
+
+  ion-icon {
+    font-size: 20px;
+  }
+}
+
+.login-fondo {
+  --background: #0a121e;
+  --border-color: #1e293b;
+  --color: #ffffff;
+  --padding-start: 16px;
+  --padding-end: 16px; 
+}
+
+.peticiones {
+  background-color: #1e293b;
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid #0a121e;
+  color: #ffffff;
+
+  h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  p {
+    font-size: 11px;
+    color: #94a3b8;
+    margin: 4px 0 0 0;
+  }
+}
+
+.reservas {
+  background-color: #e2e8f0; /* Fondo claro como el de la maqueta */
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid #f7f8f8;
+  color: #0f172a;
+  text-align: left;
+  margin-top: 14px;
+
+  .reserva-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    margin-top: 4px;
+  }
+
+  .sub-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-estado {
+    background-color: #0f172a;
+    color: #ffffff;
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+
+  h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 4px 0;
+  }
+
+  p {
+    font-size: 11px;
+    color: #475569;
+    margin: 0;
+  }
+}
+
+/* --- ESTILOS AGREGADOS PARA LAS SECCIONES INFERIORES --- */
+
+.titulo-seccion {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.link-catalogo {
+  font-size: 11px;
+  color: #38bdf8;
+  text-decoration: none;
+}
+
+.item-card {
+  background-color: #1e293b;
+  border-radius: 12px;
+  padding: 12px 16px;
+  border: 1px solid #334155;
+  margin-top: 14px;
+
+  .icon-box {
+    width: 38px;
+    height: 38px;
+    background-color: #0f172a;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #38bdf8;
+    border: 1px solid #334155;
+  }
+
+  .item-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0;
+  }
+
+  .item-subtitle {
+    font-size: 10px;
+    color: #94a3b8;
+    margin: 2px 0 0 0;
+  }
+
+  .btn-reservar {
+    background-color: #0f172a;
+    color: #ffffff;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:active {
+      opacity: 0.8;
+    }
+  }
+}
