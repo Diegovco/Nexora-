@@ -1,13 +1,95 @@
-<ion-header [translucent]="true">
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>gestion-reservas</ion-title>
+    <div class="logo-container" slot="start">
+      <div class="logo">
+        <img src="assets/img/nexora-logo.png" alt="Nexora Logo"/>
+      </div>
+      <h1 class="app-title">Catálogo</h1>
+    </div>
+
+    <ion-buttons slot="end">
+  <ion-button class="notification-btn" routerLink="/avisos">
+    <ion-icon name="notifications-outline" slot="icon-only"></ion-icon>
+  </ion-button>
+</ion-buttons>
+
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">gestion-reservas</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="login-fondo">
+
+  <!-- Buscador -->
+  <div class="container mt-2">
+    <div class="row justify-content-center">
+      <div class="col-11 col-md-10">
+        <div class="search-box d-flex align-items-center">
+          <ion-icon name="search-outline" class="search-icon me-2"></ion-icon>
+          <input 
+            type="text" 
+            placeholder="Buscar" 
+            class="search-input"
+            [(ngModel)]="texto"
+            (input)="filtrar()" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chips / Filtros -->
+  <div class="container mt-3 mb-2">
+    <div class="row justify-content-center">
+      <div class="col-11 col-md-10 d-flex flex-wrap gap-2">
+        @for (c of categorias; track c) {
+          <button 
+            class="chip-filter"
+            [class.active]="categoria === c"
+            (click)="elegirCategoria(c)">
+            {{ c === 'Laboratorio' ? 'Laboratorios' : (c === 'Libro' ? 'Libros' : c) }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de Catálogo -->
+  <div class="container mt-2">
+    @for (r of recursos; track r.codigo) {
+      <div class="row justify-content-center mb-2">
+        <div class="item-card col-11 col-md-10 d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center">
+            <div class="icon-box me-3">{{ r.codigo }}</div>
+            <div class="text-start">
+              <h4 class="item-title">{{ r.nombre }}</h4>
+              <p class="item-subtitle">{{ r.ubicacion }}</p>
+            </div>
+          </div>
+          <span class="badge-status" [ngClass]="claseEstado(r.estado)">{{ r.estado }}</span>
+        </div>
+      </div>
+    } @empty {
+      <div class="row justify-content-center mt-4">
+        <div class="col-11 col-md-10 text-center text-muted">
+          <p>No se encontraron recursos.</p>
+        </div>
+      </div>
+    }
+  </div>
+
 </ion-content>
+
+<ion-footer class="ion-no-border">
+  <nav class="nx-barra">
+    <a routerLink="/inicio" routerLinkActive="activa">
+      <ion-icon name="home-outline"></ion-icon>Inicio
+    </a>
+    <a routerLink="/gestion-reservas" routerLinkActive="activa">
+      <ion-icon name="grid-outline"></ion-icon>Catálogo
+    </a>
+    <a routerLink="/admin-recursos" routerLinkActive="activa">
+      <ion-icon name="receipt-outline"></ion-icon>Reservas
+    </a>
+    <a routerLink="/login" routerLinkActive="activa">
+      <ion-icon name="person-outline"></ion-icon>Salir
+    </a>
+  </nav>
+</ion-footer>

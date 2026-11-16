@@ -70,8 +70,7 @@ export class LoginPage {
     if (userFound) {
       console.log('Inicio de sesión exitoso para:', userFound.email);
       // Reemplaza la pila de navegación hacia la ruta de tabs
-      this.navCtrl.navigateRoot('/inicio'); // Cambia a la ruta de tabs
-
+      this.navCtrl.navigateRoot('/tabs/inicio');
     } else {
       alert('Correo o contraseña incorrectos.');
     }

@@ -14,10 +14,10 @@ import {
 import { addIcons } from 'ionicons';
 import { 
   notificationsOutline, 
-  scanOutline, 
-  listOutline, 
-  cubeOutline, 
-  logOutOutline 
+  homeOutline, 
+  gridOutline, 
+  receiptOutline, 
+  personOutline 
 } from 'ionicons/icons';
 
 @Component({
@@ -42,10 +42,10 @@ export class InicioPage {
   constructor() {
     addIcons({ 
       'notifications-outline': notificationsOutline,
-      'scan-outline': scanOutline,
-      'list-outline': listOutline,
-      'cube-outline': cubeOutline,
-      'log-out-outline': logOutOutline,
+      'home-outline': homeOutline,
+      'grid-outline': gridOutline,
+      'receipt-outline': receiptOutline,
+      'person-outline': personOutline,
     });
   }
 }

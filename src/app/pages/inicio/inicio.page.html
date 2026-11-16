@@ -8,10 +8,10 @@
     </div>
 
     <ion-buttons slot="end">
-      <ion-button class="notification-btn">
-        <ion-icon name="notifications-outline" slot="icon-only"></ion-icon>
-      </ion-button>
-    </ion-buttons>
+  <ion-button class="notification-btn" routerLink="/avisos">
+    <ion-icon name="notifications-outline" slot="icon-only"></ion-icon>
+  </ion-button>
+</ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -56,7 +56,7 @@
     <div class="row justify-content-center">
       <div class="col-10 d-flex justify-content-between align-items-center mb-2">
         <h3 class="titulo-seccion">Disponibles ahora</h3>
-        <a routerLink="/tabs/catalogo" class="link-catalogo">Ver catálogo</a>
+        <a routerLink="/gestion-reservas" class="link-catalogo">Ver catálogo</a>
       </div>
     </div>
 
@@ -107,9 +107,17 @@
 
 <ion-footer class="ion-no-border">
   <nav class="nx-barra">
-    <a routerLink="/escanear" class="activa"><ion-icon name="scan-outline"></ion-icon>Escanear</a>
-    <a routerLink="/gestion-reservas"><ion-icon name="list-outline"></ion-icon>Solicitudes</a>
-    <a routerLink="/admin-recursos"><ion-icon name="cube-outline"></ion-icon>Inventario</a>
-    <a routerLink="/login"><ion-icon name="log-out-outline"></ion-icon>Salir</a>
+    <a routerLink="/inicio" routerLinkActive="activa">
+      <ion-icon name="home-outline"></ion-icon>Inicio
+    </a>
+    <a routerLink="/gestion-reservas" routerLinkActive="activa">
+      <ion-icon name="grid-outline"></ion-icon>Catálogo
+    </a>
+    <a routerLink="/admin-recursos" routerLinkActive="activa">
+      <ion-icon name="receipt-outline"></ion-icon>Reserva
+    </a>
+    <a routerLink="/login" routerLinkActive="activa">
+      <ion-icon name="person-outline"></ion-icon>Salir
+    </a>
   </nav>
 </ion-footer>
