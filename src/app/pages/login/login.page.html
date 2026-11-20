@@ -4,8 +4,7 @@
     <!-- Logo -->
     <div class="header-section">
       <div class="logo">
-        <img src="assets/img/nexora-logo.png" alt="Nexora
-         Logo" class="logo-img" />
+        <img src="assets/img/nexora-logo.png" alt="Nexora Logo" class="logo-img" />
       </div>
       <h1 class="app-title">NEXORA</h1>
       <p class="app-subtitle">Tu campus, conectado</p>
@@ -19,7 +18,7 @@
           <ion-item lines="none" class="custom-input-item">
             <ion-input
               type="email"
-              placeholder="usuario@utcalvillo.edu.mx"
+              placeholder="E2531089@utcalvillo.edu.mx"
               [(ngModel)]="email"
               name="email"
               required>
@@ -57,15 +56,13 @@
     <!-- VISTA 2: Recuperación de Contraseña -->
     @if (showForgotPassword) {
       <div class="login-form">
-        
-        <!-- PASO A: Verificar Correo -->
         @if (!emailVerified) {
           <div class="input-group">
             <label class="custom-label">Ingresa tu correo registrado</label>
             <ion-item lines="none" class="custom-input-item">
               <ion-input
                 type="email"
-                placeholder="usuario@utcalvillo.edu.mx"
+                placeholder="E2531089@utcalvillo.edu.mx"
                 [(ngModel)]="recoveryEmail"
                 name="recoveryEmail"
                 required>
@@ -78,7 +75,6 @@
           </ion-button>
         }
 
-        <!-- PASO B: Cambiar Contraseña (se activa si el correo existe) -->
         @if (emailVerified) {
           <div class="input-group">
             <label class="custom-label">Correo verificado</label>
@@ -123,11 +119,9 @@
           </ion-button>
         }
 
-        <!-- Botón Volver -->
         <div class="forgot-password">
           <a (click)="toggleForgotPassword(false)" style="cursor: pointer;">Volver a iniciar sesión</a>
         </div>
-
       </div>
     }
 
@@ -135,16 +129,68 @@
     @if (showRegister) {
       <form (ngSubmit)="onRegister()" class="login-form">
         <div class="input-group">
+          <label class="custom-label">Nombre</label>
+          <ion-item lines="none" class="custom-input-item">
+            <ion-input
+              type="text"
+              placeholder="Ej. Juan"
+              [(ngModel)]="registerNombre"
+              name="registerNombre"
+              required>
+            </ion-input>
+          </ion-item>
+        </div>
+
+        <div class="input-group">
+          <label class="custom-label">Apellido</label>
+          <ion-item lines="none" class="custom-input-item">
+            <ion-input
+              type="text"
+              placeholder="Ej. Pérez"
+              [(ngModel)]="registerApellido"
+              name="registerApellido"
+              required>
+            </ion-input>
+          </ion-item>
+        </div>
+
+        <div class="input-group">
+          <label class="custom-label">Matrícula</label>
+          <ion-item lines="none" class="custom-input-item">
+            <ion-input
+              type="text"
+              placeholder="Ej. 2531089"
+              [(ngModel)]="registerMatricula"
+              name="registerMatricula"
+              required>
+            </ion-input>
+          </ion-item>
+        </div>
+
+        <div class="input-group">
           <label class="custom-label">Correo institucional</label>
           <ion-item lines="none" class="custom-input-item">
             <ion-input
               type="email"
-              placeholder="nuevo.usuario@utcalvillo.edu.mx"
+              placeholder="E2531089@utcalvillo.edu.mx o A1024@utcalvillo.edu.mx"
               [(ngModel)]="registerEmail"
+              (ionInput)="validarCorreoRegistro()"
               name="registerEmail"
               required>
             </ion-input>
           </ion-item>
+
+          @if (registerEmail.trim().length > 0) {
+            @if (correoValido) {
+              <small style="color: #4ade80; display: block; margin-top: 4px; font-size: 12px;">
+                Correo válido — Rol asignado: <strong>{{ rolDetectado }}</strong>
+              </small>
+            } @else {
+              <small style="color: #f87171; display: block; margin-top: 4px; font-size: 12px;">
+                Correo inválido. Debe iniciar con <strong>A</strong> (Administrativo) o <strong>E</strong> (Estudiante) en MAYÚSCULA, seguido solo de números antes de @utcalvillo.edu.mx
+              </small>
+            }
+          }
         </div>
 
         <div class="input-group">

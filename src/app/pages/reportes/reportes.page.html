@@ -1,13 +1,152 @@
-<ion-header [translucent]="true">
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>reportes</ion-title>
+    <h1 class="app-title">{{ esAdmin ? 'Reportes Recibidos' : 'Reportar Caso' }}</h1>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">reportes</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="login-fondo">
+  <div class="container mt-3">
+
+    @if (!esAdmin) {
+      <!-- VISTA USUARIO / ESTUDIANTE: Formulario para reportar un caso -->
+      <div class="row justify-content-center mb-3">
+        <div class="item-card col-11 col-md-10 p-3">
+          <h4 class="item-title mb-3">Nuevo reporte de equipo o recurso</h4>
+
+          <div class="mb-3">
+            <label class="form-label" for="tipoEquipo">Tipo de equipo</label>
+            <select id="tipoEquipo" class="form-control" [(ngModel)]="tipoEquipo">
+              <option value="Equipo AV">Equipo AV</option>
+              <option value="Laboratorio">Laboratorio</option>
+              <option value="Libro">Libro</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="nombreEquipo">Nombre del equipo</label>
+            <input
+              id="nombreEquipo"
+              type="text"
+              class="form-control"
+              placeholder="Ej. Proyector Epson, Kit Arduino Uno..."
+              [(ngModel)]="nombreEquipo" />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="descripcion">Descripción del problema</label>
+            <textarea
+              id="descripcion"
+              class="form-control"
+              rows="4"
+              placeholder="Describe qué falla presenta o qué ocurrió con el equipo..."
+              [(ngModel)]="descripcion"></textarea>
+          </div>
+
+          <div class="d-flex justify-content-end">
+            <button type="button" class="btn-reservar d-flex align-items-center gap-1"
+                    [disabled]="enviando" (click)="enviarReporte()">
+              <ion-icon name="send-outline"></ion-icon>
+              {{ enviando ? 'Enviando...' : 'Enviar reporte' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <!-- VISTA ADMINISTRATIVO: Lista de todos los reportes -->
+      <div class="row justify-content-center mb-3">
+        <div class="item-card col-11 col-md-10 p-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label class="form-label mb-0">Casos reportados por usuarios</label>
+            <span class="badge-estado">{{ reportesFiltrados.length }} total</span>
+          </div>
+
+          <div class="d-flex gap-2">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Filtrar por tipo, equipo, matrícula o estado..."
+              [(ngModel)]="filtroTexto"
+              (input)="aplicarFiltro()" />
+            <button type="button" class="btn-reservar d-flex align-items-center gap-1" (click)="cargarReportes()">
+              <ion-icon name="refresh-outline"></ion-icon>
+              Actualizar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      @if (cargando) {
+        <div class="text-center text-muted mt-4">
+          <p>Cargando reportes desde la base de datos...</p>
+        </div>
+      } @else {
+        @for (rep of reportesFiltrados; track rep._id || $index; let i = $index) {
+          <div class="row justify-content-center mb-2">
+            <div class="item-card col-11 col-md-10">
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                  <div class="icon-box me-3">#{{ i + 1 }}</div>
+                  <div class="text-start">
+                    <h4 class="item-title">{{ rep.nombreEquipo }} ({{ rep.tipoEquipo }})</h4>
+                    <p class="item-subtitle">
+                      Reportado por: <strong>{{ rep.usuario }}</strong>
+                      @if (rep.matricula) { · Matrícula: {{ rep.matricula }} }
+                    </p>
+                    <p class="item-subtitle">Fecha: {{ rep.fecha }}</p>
+                    <p class="item-subtitle mt-1"><strong>Descripción:</strong> {{ rep.descripcion }}</p>
+                  </div>
+                </div>
+                <span class="badge-estado">{{ rep.estado }}</span>
+              </div>
+
+              @if (rep.estado.toLowerCase() === 'pendiente') {
+                <div class="d-flex gap-2 mt-2 justify-content-end">
+                  <button type="button" class="btn-reservar" (click)="marcarResuelto(rep)">
+                    Marcar como resuelto
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        } @empty {
+          <div class="text-center text-muted mt-4">
+            <p>No hay reportes registrados en la base de datos.</p>
+          </div>
+        }
+      }
+    }
+
+  </div>
 </ion-content>
+
+<ion-footer class="ion-no-border">
+  <nav class="nx-barra">
+    @if (!esAdmin) {
+      <a routerLink="/inicio" routerLinkActive="activa">
+        <ion-icon name="home-outline"></ion-icon>Inicio
+      </a>
+      <a routerLink="/catalogo" routerLinkActive="activa">
+        <ion-icon name="grid-outline"></ion-icon>Catálogo
+      </a>
+      <a routerLink="/escanear" routerLinkActive="activa">
+        <ion-icon name="scan-circle-outline"></ion-icon>Escanear
+      </a>
+      <a routerLink="/reportes" routerLinkActive="activa">
+        <ion-icon name="alert-circle-outline"></ion-icon>Reportar
+      </a>
+    } @else {
+      <a routerLink="/inicio" routerLinkActive="activa">
+        <ion-icon name="home-outline"></ion-icon>Inicio
+      </a>
+      <a routerLink="/nuevo-recurso" routerLinkActive="activa">
+        <ion-icon name="add-circle-outline"></ion-icon>Recurso
+      </a>
+      <a routerLink="/gestion-reservas" routerLinkActive="activa">
+        <ion-icon name="document-text-outline"></ion-icon>Gestión
+      </a>
+      <a routerLink="/registros" routerLinkActive="activa">
+        <ion-icon name="folder-open-outline"></ion-icon>Aprobadas
+      </a>
+    }
+  </nav>
+</ion-footer>

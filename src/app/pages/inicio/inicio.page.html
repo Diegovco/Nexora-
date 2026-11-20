@@ -8,116 +8,186 @@
     </div>
 
     <ion-buttons slot="end">
-  <ion-button class="notification-btn" routerLink="/avisos">
-    <ion-icon name="notifications-outline" slot="icon-only"></ion-icon>
-  </ion-button>
-</ion-buttons>
+      <ion-button class="notification-btn" routerLink="/avisos" title="Avisos">
+        <ion-icon name="notifications-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+
+      <ion-button class="notification-btn" routerLink="/usuarios" title="Usuario">
+        <ion-icon name="person-circle-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+
+      <ion-button class="notification-btn" (click)="cerrarSesion()" title="Salir">
+        <ion-icon name="log-out-outline" slot="icon-only" style="color: #f87171;"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="login-fondo">
-  <!-- Se agrega la clase 'row' y se quita el punto de '.col-4' -->
-
-  <div class="container text-center">
-    <div class="row justify-content-center">
-      <div class="peticiones col-3">
-        <h2>2/3</h2>
-        <p>Peticiones</p>
-      </div>
-
-      <div class="peticiones col-3">
-        <h2>1</h2>
-        <p>Reservas hoy</p>
-      </div>
-
-      <div class="peticiones col-3">
-        <h2>#2</h2>
-        <p>En espera</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Sección: Tarjeta de Próxima Reserva -->
-  <div class="container text-center">
-    <div class="row justify-content-center">
-      <div class="reservas col-10">
-        <div class="reserva-header d-flex justify-content-between align-items-center">
-          <span class="sub-label">PRÓXIMA RESERVA</span>
-          <span class="badge-estado">Aprobada</span>
+  @if (esEstudiante) {
+    <!-- ==================== VISTA ESTUDIANTE ==================== -->
+    <div class="container text-center">
+      <div class="row justify-content-center">
+        <div class="peticiones col-3">
+          <h2>{{ totalReservasProximas }}</h2>
+          <p>Reservas próximas</p>
         </div>
-        <h2>Laboratorio de Cómputo 2</h2>
-        <p>Hoy · 12:00 – 13:30 · Edificio B</p>
-      </div>
-    </div> <!-- <- Este div era el que faltaba -->
-  </div>
 
-  <!-- Sección: Disponibles ahora -->
-  <div class="container mt-3">
-    <div class="row justify-content-center">
-      <div class="col-10 d-flex justify-content-between align-items-center mb-2">
-        <h3 class="titulo-seccion">Disponibles ahora</h3>
-        <a routerLink="/gestion-reservas" class="link-catalogo">Ver catálogo</a>
+        <div class="peticiones col-3">
+          <h2>{{ totalReservasHoy }}</h2>
+          <p>Reservas del día</p>
+        </div>
+
+        <div class="peticiones col-3">
+          <h2>{{ turnoEsperaProxima }}</h2>
+          <p>En espera</p>
+        </div>
       </div>
     </div>
 
-    <!-- Item 1 -->
-    <div class="row justify-content-center mb-2">
-      <div class="item-card col-10 d-flex align-items-center justify-content-between">
-        <div class="d-flex align-items-center">
-          <div class="icon-box me-3">LIB</div>
-          <div class="text-start">
-            <h4 class="item-title">Estructura de datos en Java</h4>
-            <p class="item-subtitle">Biblioteca · 3 ejemplares</p>
+    <!-- Sección: Tarjeta blanca de Próxima Reserva -->
+    <div class="container text-center">
+      <div class="row justify-content-center">
+        @if (proximaReserva) {
+          <div class="reservas col-10">
+            <div class="reserva-header d-flex justify-content-between align-items-center">
+              <span class="sub-label">PRÓXIMA RESERVA</span>
+              <span class="badge-estado">{{ proximaReserva.estado }}</span>
+            </div>
+            <h2>{{ proximaReserva.nombreRecurso }}</h2>
+            <p>
+              {{ proximaReserva.fecha === fechaHoy ? 'Hoy' : proximaReserva.fecha }}
+              · {{ proximaReserva.horaInicio }} – {{ proximaReserva.horaFin }}
+              · {{ proximaReserva.ubicacion }}
+            </p>
+          </div>
+        } @else {
+          <div class="reservas col-10">
+            <div class="reserva-header d-flex justify-content-between align-items-center">
+              <span class="sub-label">PRÓXIMA RESERVA</span>
+              <span class="badge-estado">Sin turnos</span>
+            </div>
+            <h2>Sin reservas próximas</h2>
+            <p>Aún no tienes reservas programadas en la cola.</p>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Sección: Disponibles ahora (máximo 5 por recurso) -->
+    <div class="container mt-3">
+      <div class="row justify-content-center">
+        <div class="col-10 d-flex justify-content-between align-items-center mb-2">
+          <h3 class="titulo-seccion">Disponibles ahora</h3>
+        </div>
+      </div>
+
+      @for (r of disponibles; track r._id || r.codigo) {
+        <div class="row justify-content-center mb-2">
+          <div class="item-card col-10 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+              <div class="icon-box me-3">{{ r.codigo }}</div>
+              <div class="text-start">
+                <h4 class="item-title">{{ r.nombre }}</h4>
+                <p class="item-subtitle">{{ r.ubicacion }} · Disp: {{ r.cantidad }}</p>
+              </div>
+            </div>
+            <button class="btn-reservar" (click)="reservar(r)">Reservar</button>
           </div>
         </div>
-        <button class="btn-reservar">Reservar</button>
-      </div>
-    </div>
-
-    <!-- Item 2 -->
-    <div class="row justify-content-center mb-2">
-      <div class="item-card col-10 d-flex align-items-center justify-content-between">
-        <div class="d-flex align-items-center">
-          <div class="icon-box me-3">AV</div>
-          <div class="text-start">
-            <h4 class="item-title">Bocina Bluetooth JBL</h4>
-            <p class="item-subtitle">Almacén audiovisual</p>
+      } @empty {
+        <div class="row justify-content-center mt-3">
+          <div class="col-10 text-center text-muted">
+            <p>No hay recursos disponibles en este momento.</p>
           </div>
         </div>
-        <button class="btn-reservar">Reservar</button>
+      }
+    </div>
+  } @else {
+    <!-- ==================== VISTA ADMINISTRATIVO (CANTIDADES) ==================== -->
+    <div class="container text-center">
+      <div class="row justify-content-center mb-2">
+        <div class="col-10 text-start">
+          <h3 class="titulo-seccion">Resumen de Reservas</h3>
+        </div>
+      </div>
+
+      <!-- Cantidades totales de la semana y del día -->
+      <div class="row justify-content-center">
+        <div class="peticiones col-5">
+          <h2>{{ totalSemanalGeneral }}</h2>
+          <p>Reservas de la semana</p>
+        </div>
+
+        <div class="peticiones col-5">
+          <h2>{{ totalDiarioGeneral }}</h2>
+          <p>Reservas del día</p>
+        </div>
       </div>
     </div>
 
-    <!-- Item 3 -->
-    <div class="row justify-content-center mb-2">
-      <div class="item-card col-10 d-flex align-items-center justify-content-between">
-        <div class="d-flex align-items-center">
-          <div class="icon-box me-3">LAB</div>
-          <div class="text-start">
-            <h4 class="item-title">Laboratorio de Electrónica</h4>
-            <p class="item-subtitle">Edificio D · Libre hasta 16:00</p>
+    <!-- Desglose por Categoría: Libro, Laboratorio y Equipo AV -->
+    <div class="container mt-3">
+      <div class="row justify-content-center mb-2">
+        <div class="col-10 text-start">
+          <h3 class="titulo-seccion">Reservas por Categoría (Semana / Día)</h3>
+        </div>
+      </div>
+
+      @for (cat of estadisticasCategorias; track cat.nombre) {
+        <div class="row justify-content-center mb-2">
+          <div class="item-card col-10 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+              <div class="icon-box me-3">{{ cat.sigla }}</div>
+              <div class="text-start">
+                <h4 class="item-title">{{ cat.nombre }}</h4>
+                <p class="item-subtitle">
+                  Semana: <strong>{{ cat.totalSemana }}</strong> {{ cat.totalSemana === 1 ? 'reserva' : 'reservas' }}
+                </p>
+                <p class="item-subtitle">
+                  Hoy: <strong>{{ cat.totalDia }}</strong> {{ cat.totalDia === 1 ? 'reserva' : 'reservas' }}
+                </p>
+              </div>
+            </div>
+            <div class="text-end">
+              <span class="badge-estado">{{ cat.totalSemana }} sem · {{ cat.totalDia }} hoy</span>
+            </div>
           </div>
         </div>
-        <button class="btn-reservar">Reservar</button>
-      </div>
+      }
     </div>
-  </div>
-
+  }
 </ion-content>
 
 <ion-footer class="ion-no-border">
   <nav class="nx-barra">
-    <a routerLink="/inicio" routerLinkActive="activa">
-      <ion-icon name="home-outline"></ion-icon>Inicio
-    </a>
-    <a routerLink="/gestion-reservas" routerLinkActive="activa">
-      <ion-icon name="grid-outline"></ion-icon>Catálogo
-    </a>
-    <a routerLink="/admin-recursos" routerLinkActive="activa">
-      <ion-icon name="receipt-outline"></ion-icon>Reserva
-    </a>
-    <a routerLink="/login" routerLinkActive="activa">
-      <ion-icon name="person-outline"></ion-icon>Salir
-    </a>
+    @if (esEstudiante) {
+      <a routerLink="/inicio" routerLinkActive="activa">
+        <ion-icon name="home-outline"></ion-icon>Inicio
+      </a>
+      <a routerLink="/catalogo" routerLinkActive="activa">
+        <ion-icon name="grid-outline"></ion-icon>Catálogo
+      </a>
+      
+      <a routerLink="/escanear" routerLinkActive="activa">
+        <ion-icon name="scan-circle-outline"></ion-icon>Escanear
+      </a>
+      <a routerLink="/reportes" routerLinkActive="activa">
+        <ion-icon name="alert-circle-outline"></ion-icon>Reportar
+      </a>
+    } @else {
+      <a routerLink="/inicio" routerLinkActive="activa">
+        <ion-icon name="home-outline"></ion-icon>Inicio
+      </a>
+      <a routerLink="/nuevo-recurso" routerLinkActive="activa">
+        <ion-icon name="add-circle-outline"></ion-icon>Recurso
+      </a>
+      <a routerLink="/gestion-reservas" routerLinkActive="activa">
+        <ion-icon name="document-text-outline"></ion-icon>Gestión
+      </a>
+      <a routerLink="/registros" routerLinkActive="activa">
+        <ion-icon name="folder-open-outline"></ion-icon>Aprovadas
+      </a>
+    }
   </nav>
 </ion-footer>

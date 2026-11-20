@@ -1,13 +1,88 @@
-<ion-header [translucent]="true">
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>mis-reservas</ion-title>
+    <h1 class="app-title">Mis Reservas</h1>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">mis-reservas</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="login-fondo">
+  <div class="container mt-3">
+    <!-- Buscador por Matrícula -->
+    <div class="row justify-content-center mb-3">
+      <div class="item-card col-11 col-md-10 p-3">
+        <label class="form-label">Consulta por Matrícula</label>
+        <div class="d-flex gap-2">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Ej. 2531089"
+            [(ngModel)]="matricula"
+            (keyup.enter)="buscarPorMatricula()" />
+          <button type="button" class="btn-reservar d-flex align-items-center gap-1" (click)="buscarPorMatricula()">
+            <ion-icon name="search-outline"></ion-icon>
+            Buscar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estados y Resultados -->
+    @if (cargando) {
+      <div class="text-center text-muted mt-4">
+        <p>Buscando reservas en la base de datos...</p>
+      </div>
+    } @else if (busquedaRealizada) {
+      @for (r of reservas; track r._id || r.turno) {
+        <div class="row justify-content-center mb-2">
+          <div class="item-card col-11 col-md-10">
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center">
+                <div class="icon-box me-3">#{{ r.turno }}</div>
+                <div class="text-start">
+                  <h4 class="item-title">{{ r.nombreRecurso }} ({{ r.codigoRecurso }})</h4>
+                  <p class="item-subtitle">Matrícula: {{ r.solicitante }} · {{ r.ubicacion }}</p>
+                  <p class="item-subtitle">{{ r.fecha }} · {{ r.horaInicio }} – {{ r.horaFin }}</p>
+                  @if (r.motivo) {
+                    <p class="item-subtitle">Motivo: {{ r.motivo }}</p>
+                  }
+                </div>
+              </div>
+              <span class="badge-estado">{{ r.estado }}</span>
+            </div>
+
+            @if (r.estado === 'Pendiente') {
+              <div class="d-flex gap-2 mt-2 justify-content-end">
+                <button class="btn-outline-secondary" (click)="cambiarEstado(r, 'Rechazada')">Cancelar</button>
+                <button class="btn-reservar" (click)="cambiarEstado(r, 'Aprobada')">Aprobar turno</button>
+              </div>
+            }
+          </div>
+        </div>
+      } @empty {
+        <div class="text-center text-muted mt-4">
+          <p>No se encontraron reservas registradas para la matrícula <strong>{{ matricula }}</strong>.</p>
+        </div>
+      }
+    } @else {
+      <div class="text-center text-muted mt-4">
+        <p>Ingresa tu matrícula arriba para ver tus reservas y turnos en cola.</p>
+      </div>
+    }
+  </div>
 </ion-content>
+
+<ion-footer class="ion-no-border">
+  <nav class="nx-barra">
+    <a routerLink="/inicio" routerLinkActive="activa">
+      <ion-icon name="home-outline"></ion-icon>Inicio
+    </a>
+    <a routerLink="/catalogo" routerLinkActive="activa">
+      <ion-icon name="grid-outline"></ion-icon>Catálogo
+    </a>
+    <a routerLink="/mis-reservas" routerLinkActive="activa">
+      <ion-icon name="receipt-outline"></ion-icon>Reservas
+    </a>
+    <a routerLink="/login" routerLinkActive="activa">
+      <ion-icon name="person-outline"></ion-icon>Salir
+    </a>
+  </nav>
+</ion-footer>

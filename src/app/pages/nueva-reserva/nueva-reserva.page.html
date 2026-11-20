@@ -1,13 +1,102 @@
-<ion-header [translucent]="true">
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>nueva-reserva</ion-title>
+    <ion-buttons slot="start">
+      <ion-button routerLink="/inicio">
+        <ion-icon name="chevron-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <h1 class="app-title">Nueva Reserva</h1>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">nueva-reserva</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="login-fondo">
+  <div class="container mt-3">
+    <!-- Tarjeta resumen del recurso seleccionado -->
+    <div class="row justify-content-center mb-3">
+      <div class="item-card col-11 col-md-10 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+          <div class="icon-box me-3">{{ recurso.codigo || 'REC' }}</div>
+          <div class="text-start">
+            <h4 class="item-title">{{ recurso.nombre || 'Cargando recurso...' }}</h4>
+            <p class="item-subtitle">{{ recurso.categoria }} · {{ recurso.ubicacion }}</p>
+          </div>
+        </div>
+        <span class="badge-estado">{{ recurso.estado }}</span>
+      </div>
+    </div>
+
+    <!-- Formulario de reserva -->
+    <div class="row justify-content-center">
+      <div class="item-card col-11 col-md-10 p-3">
+        <div class="mb-3 text-start">
+          <label class="form-label fw-bold">Solicitante / Matrícula</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Ej. Juan Pérez - 210456"
+            [(ngModel)]="solicitante" />
+        </div>
+
+        <div class="mb-3 text-start">
+          <label class="form-label fw-bold">Fecha de reserva</label>
+          <input
+            type="date"
+            class="form-control"
+            [(ngModel)]="fecha" />
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-6 text-start">
+            <label class="form-label fw-bold">Hora inicio</label>
+            <input
+              type="time"
+              class="form-control"
+              [(ngModel)]="horaInicio" />
+          </div>
+          <div class="col-6 text-start">
+            <label class="form-label fw-bold">Hora fin</label>
+            <input
+              type="time"
+              class="form-control"
+              [(ngModel)]="horaFin" />
+          </div>
+        </div>
+
+        <div class="mb-3 text-start">
+          <label class="form-label fw-bold">Motivo o actividad</label>
+          <textarea
+            rows="3"
+            class="form-control"
+            placeholder="Describe brevemente el uso del recurso..."
+            [(ngModel)]="motivo"></textarea>
+        </div>
+
+        <div class="d-flex gap-2 mt-3">
+          <button type="button" class="btn btn-outline-secondary w-50" (click)="cancelar()">
+            Cancelar
+          </button>
+          <button type="button" class="btn-reservar w-50" (click)="confirmarReserva()">
+            Confirmar Reserva
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </ion-content>
+
+<ion-footer class="ion-no-border">
+  <nav class="nx-barra">
+    <a routerLink="/inicio" routerLinkActive="activa">
+      <ion-icon name="home-outline"></ion-icon>Inicio
+    </a>
+    <a routerLink="/catalogo" routerLinkActive="activa">
+      <ion-icon name="grid-outline"></ion-icon>Catálogo
+    </a>
+    <a routerLink="/mis-reservas" routerLinkActive="activa">
+      <ion-icon name="receipt-outline"></ion-icon>Mis Reservas
+    </a>
+    <a routerLink="/login" routerLinkActive="activa">
+      <ion-icon name="person-outline"></ion-icon>Salir
+    </a>
+  </nav>
+</ion-footer>

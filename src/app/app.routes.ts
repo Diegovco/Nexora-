@@ -3,7 +3,7 @@ import type { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'login',
+    redirectTo: 'catalogo',
     pathMatch: 'full',
   },
   {
@@ -15,8 +15,12 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/registro/registro.page').then((m) => m.RegistroPage),
   },
   {
-  path: 'inicio',
-  loadComponent: () => import('./pages/inicio/inicio.page').then((m) => m.InicioPage),
+    path: 'registros',
+    loadComponent: () => import('./pages/registro/registro.page').then((m) => m.RegistroPage),
+  },
+  {
+    path: 'inicio',
+    loadComponent: () => import('./pages/inicio/inicio.page').then((m) => m.InicioPage),
   },
   {
     path: 'recursos',
@@ -35,16 +39,16 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/mis-reservas/mis-reservas.page').then((m) => m.MisReservasPage),
   },
   {
+    path: 'gestion-reservas',
+    loadComponent: () => import('./pages/gestion-reservas/gestion-reservas.page').then((m) => m.GestionReservasPage),
+  },
+  {
     path: 'avisos',
     loadComponent: () => import('./pages/avisos/avisos.page').then((m) => m.AvisosPage),
   },
   {
     path: 'escanear',
     loadComponent: () => import('./pages/escanear/escanear.page').then((m) => m.EscanearPage),
-  },
-  {
-    path: 'gestion-reservas',
-    loadComponent: () => import('./pages/gestion-reservas/gestion-reservas.page').then((m) => m.GestionReservasPage),
   },
   {
     path: 'usuarios',
@@ -61,5 +65,13 @@ export const routes: Routes = [
   {
     path: 'nuevo-recurso',
     loadComponent: () => import('./pages/nuevo-recurso/nuevo-recurso.page').then((m) => m.NuevoRecursoPage),
-  }
+  },
+  {
+    path: 'catalogo',
+    loadComponent: () => import('./pages/catalogo/catalogo.page').then((m) => m.CatalogoPage),
+  },
+  {
+    path: '**',
+    redirectTo: 'catalogo',
+  },
 ];

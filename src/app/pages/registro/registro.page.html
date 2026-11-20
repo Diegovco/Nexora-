@@ -1,13 +1,69 @@
-<ion-header [translucent]="true">
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>registro</ion-title>
+    <h1 class="app-title">Registro de Aprobadas</h1>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">registro</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="login-fondo">
+  <div class="container mt-3">
+    <div class="row justify-content-center mb-2">
+      <div class="col-11 col-md-10 d-flex justify-content-between align-items-center">
+        <span class="text-muted">En cola: <strong>{{ colaAprobadas.length }}</strong></span>
+        @if (colaAprobadas.length > 0) {
+          <button type="button" class="btn-reservar d-flex align-items-center gap-1" (click)="atenderSiguiente()">
+            <ion-icon name="checkmark-done-outline"></ion-icon>
+            Atender #1
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (cargando) {
+      <div class="text-center text-muted mt-4">
+        <p>Cargando registro de reservas aprobadas...</p>
+      </div>
+    } @else {
+      @for (item of colaAprobadas; track item.reserva_id || $index; let i = $index) {
+        <div class="row justify-content-center mb-2">
+          <div class="item-card col-11 col-md-10">
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center">
+                <div class="icon-box me-3">#{{ i + 1 }}</div>
+                <div class="text-start">
+                  <h4 class="item-title">{{ item.nombreRecurso }} ({{ item.codigoRecurso }})</h4>
+                  <p class="item-subtitle">Matrícula: {{ item.solicitante }} · {{ item.ubicacion }}</p>
+                  <p class="item-subtitle">{{ item.fecha }} · {{ item.horaInicio }} – {{ item.horaFin }}</p>
+                  <p class="item-subtitle">Aprobada: {{ item.fechaAprobacion }}</p>
+                </div>
+              </div>
+              <span class="badge-estado" [class.en-turno]="i === 0">
+                {{ i === 0 ? 'En turno' : 'Aprobada' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="text-center text-muted mt-4">
+          <p>Aún no hay reservas aprobadas en la cola de registro.</p>
+        </div>
+      }
+    }
+  </div>
 </ion-content>
+
+<ion-footer class="ion-no-border">
+  <nav class="nx-barra">
+    <a routerLink="/inicio" routerLinkActive="activa">
+      <ion-icon name="home-outline"></ion-icon>Inicio
+    </a>
+    <a routerLink="/nuevo-recurso" routerLinkActive="activa">
+      <ion-icon name="add-circle-outline"></ion-icon>Recurso
+    </a>
+    <a routerLink="/gestion-reservas" routerLinkActive="activa">
+      <ion-icon name="document-text-outline"></ion-icon>Gestión
+    </a>
+    <a routerLink="/registros" routerLinkActive="activa">
+      <ion-icon name="folder-open-outline"></ion-icon>Aprobadas
+    </a>
+  </nav>
+</ion-footer>

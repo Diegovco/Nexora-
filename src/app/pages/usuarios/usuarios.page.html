@@ -1,13 +1,124 @@
-<ion-header [translucent]="true">
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>usuarios</ion-title>
+    <h1 class="app-title" slot="start">{{ nombre || 'Usuario' }}</h1>
+
+    <ion-buttons slot="end">
+      <ion-button class="notification-btn" (click)="cerrarSesion()" title="Salir">
+        <ion-icon name="log-out-outline" slot="icon-only" style="color: #f87171;"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">usuarios</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="login-fondo">
+  <div class="container mt-3">
+    <!-- Tarjeta con nombre, rol, correo y matrícula del usuario activo -->
+    <div class="row justify-content-center mb-3">
+      <div class="item-card profile-card col-11 col-md-10">
+        <div class="d-flex align-items-center">
+          <div class="avatar-box me-3">
+            {{ (nombre || correo || 'U').slice(0, 2).toUpperCase() }}
+          </div>
+          <div class="text-start">
+            <h4 class="item-title">{{ nombre || correo || 'Sin nombre' }}</h4>
+            <p class="item-subtitle d-flex align-items-center gap-1 mt-1">
+              <ion-icon name="id-card-outline"></ion-icon>
+              Matrícula: <strong>{{ matricula || 'No registrada' }}</strong>
+            </p>
+            <p class="item-subtitle d-flex align-items-center gap-1 mt-1">
+              <ion-icon name="mail-outline"></ion-icon>
+              Correo: <strong>{{ correo || 'No registrado' }}</strong>
+            </p>
+            @if (rol) {
+              <p class="item-subtitle mt-1">
+                Rol: <strong>{{ rol }}</strong>
+              </p>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Título dinámico de la Pila LIFO según rol -->
+    <div class="row justify-content-center mb-2">
+      <div class="col-11 col-md-10 d-flex justify-content-between align-items-center">
+        <h5 class="section-title m-0">
+          {{ esEstudiante ? 'Mis Reservas Aprobadas (Pila LIFO)' : 'Reservas Aprobadas por mí (Pila LIFO)' }}
+        </h5>
+        <span class="text-muted">Total: <strong>{{ historialReservas.length }}</strong></span>
+      </div>
+    </div>
+
+    <!-- Lista de reservas en orden LIFO (la más reciente en el tope) -->
+    @if (cargando) {
+      <div class="text-center text-muted mt-4">
+        <p>Cargando historial...</p>
+      </div>
+    } @else {
+      @for (res of historialReservas; track res.reserva_id || $index; let i = $index) {
+        <div class="row justify-content-center mb-2">
+          <div class="item-card col-11 col-md-10">
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center">
+                <div class="icon-box me-3">{{ i === 0 ? 'TOP' : '#' + (historialReservas.length - i) }}</div>
+                <div class="text-start">
+                  <h4 class="item-title">{{ res.nombreRecurso }} ({{ res.codigoRecurso }})</h4>
+                  @if (!esEstudiante) {
+                    <p class="item-subtitle">Solicitante: <strong>{{ res.solicitante }}</strong></p>
+                  }
+                  <p class="item-subtitle">{{ res.ubicacion }}</p>
+                  <p class="item-subtitle">{{ res.fecha }} · {{ res.horaInicio }} – {{ res.horaFin }}</p>
+                  <p class="item-subtitle">Movimiento: {{ res.fechaMovimiento }}</p>
+                </div>
+              </div>
+              <span class="badge-estado aprobada">
+                {{ res.estado }}
+              </span>
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="text-center text-muted mt-4">
+          <p>
+            {{ esEstudiante
+              ? 'Aún no tienes reservas aprobadas con esta cuenta.'
+              : 'Aún no hay reservas aprobadas registradas.' }}
+          </p>
+        </div>
+      }
+    }
+  </div>
 </ion-content>
+
+<ion-footer class="ion-no-border">
+  <nav class="nx-barra">
+     @if (esEstudiante) {
+      <a routerLink="/inicio" routerLinkActive="activa">
+        <ion-icon name="home-outline"></ion-icon>Inicio
+      </a>
+      <a routerLink="/catalogo" routerLinkActive="activa">
+        <ion-icon name="grid-outline"></ion-icon>Catálogo
+      </a>
+      
+      <a routerLink="/escanear" routerLinkActive="activa">
+        <ion-icon name="scan-circle-outline"></ion-icon>Escanear
+      </a>
+      <a routerLink="/reportes" routerLinkActive="activa">
+        <ion-icon name="alert-circle-outline"></ion-icon>Reportar
+      </a>
+    } @else {
+      <a routerLink="/inicio" routerLinkActive="activa">
+        <ion-icon name="home-outline"></ion-icon>Inicio
+      </a>
+      <a routerLink="/nuevo-recurso" routerLinkActive="activa">
+        <ion-icon name="add-circle-outline"></ion-icon>Recurso
+      </a>
+      <a routerLink="/gestion-reservas" routerLinkActive="activa">
+        <ion-icon name="document-text-outline"></ion-icon>Gestión
+      </a>
+      <a routerLink="/registros" routerLinkActive="activa">
+        <ion-icon name="folder-open-outline"></ion-icon>Aprovadas
+      </a>
+    }
+  </nav>
+</ion-footer>
