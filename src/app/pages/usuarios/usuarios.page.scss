@@ -1,162 +1,349 @@
-ion-toolbar {
-  --background: #0a121e;
-  --border-color: #1e293b;
-  --color: #ffffff;
-  --padding-start: 16px;
-  --padding-end: 16px;
+ion-header {
+  background: #09111e;
 }
 
-.app-title {
-  font-size: 20px;
+ion-toolbar {
+  --background: #09111e;
+  --border-color: transparent;
+  --color: #ffffff;
+  --padding-start: 18px;
+  --padding-end: 18px;
+  --padding-top: 12px;
+  --padding-bottom: 8px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #121e31;
+  border: 1.5px solid #24354f;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.header-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  .sub-hola {
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 1.1;
+    font-weight: 500;
+  }
+
+  .app-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 2px 0 0 0;
+    line-height: 1.15;
+  }
+}
+
+.logout-btn {
+  --color: #f87171;
+  --background: #132035;
+  --background-hover: rgba(248, 113, 113, 0.16);
+  --border-radius: 50%;
+  --padding-start: 0;
+  --padding-end: 0;
+  width: 38px;
+  height: 38px;
+  margin: 0;
+  border: 1px solid #1e2d44;
+  border-radius: 50%;
+  overflow: hidden;
+
+  ion-icon {
+    font-size: 18px;
+  }
+}
+
+.login-fondo {
+  --background: #09111e;
+  --color: #ffffff;
+}
+
+.main-wrapper {
+  padding: 8px 18px 28px 18px;
+  max-width: 540px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ==================== TARJETA DE PERFIL ==================== */
+.item-card {
+  background-color: #121e31;
+  border-radius: 16px;
+  padding: 15px 16px;
+  border: 1px solid #1e2d44;
+  color: #ffffff;
+}
+
+.profile-card {
+  border-color: #24354f;
+  background: linear-gradient(155deg, #142238 0%, #101b2d 100%);
+}
+
+.profile-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.avatar-box {
+  width: 54px;
+  height: 54px;
+  background-color: #1a2942;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: #60a5fa;
+  border: 1.5px solid #2b4166;
+  flex-shrink: 0;
+}
+
+.profile-info {
+  min-width: 0;
+  flex: 1;
+  text-align: left;
+}
+
+.profile-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rol-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #1a2942;
+  color: #93c5fd;
+  border: 1px solid #263b5e;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 10.5px;
+  font-weight: 600;
+
+  ion-icon {
+    font-size: 12px;
+  }
+}
+
+.profile-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #1e2d44;
+}
+
+/* ==================== ENCABEZADO DE SECCIÓN LIFO ==================== */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.section-title {
+  font-size: 13.5px;
   font-weight: 700;
   color: #ffffff;
   margin: 0;
 }
 
-.section-title {
-  font-size: 14px;
+.badge-total {
+  background-color: #1a2942;
+  color: #60a5fa;
+  border: 1px solid #263b5e;
+  font-size: 10.5px;
   font-weight: 600;
-  color: #e2e8f0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
 }
 
-.login-fondo {
-  --background: #0a121e;
-  --border-color: #1e293b;
-  --color: #ffffff;
-  --padding-start: 16px;
-  --padding-end: 16px;
+/* ==================== TARJETAS DE HISTORIAL (PILA LIFO) ==================== */
+.lista-historial {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.item-card {
-  background-color: #1e293b;
-  border-radius: 12px;
-  padding: 14px 16px;
-  border: 1px solid #334155;
-  margin-top: 8px;
+.historial-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
 
-  &.profile-card {
-    border-color: #38bdf8;
-    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+  &.top-item {
+    border-color: rgba(96, 165, 250, 0.4);
   }
 
-  .avatar-box {
-    width: 52px;
-    height: 52px;
-    background-color: rgba(56, 189, 248, 0.15);
-    border-radius: 50%;
+  .item-info {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    font-weight: 700;
-    color: #38bdf8;
-    border: 1px solid #38bdf8;
-    flex-shrink: 0;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
   }
 
   .icon-box {
-    width: 42px;
+    min-width: 42px;
     height: 42px;
-    background-color: #0f172a;
-    border-radius: 8px;
+    background-color: #1a2942;
+    border-radius: 11px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 11px;
     font-weight: 700;
-    color: #38bdf8;
-    border: 1px solid #334155;
-    flex-shrink: 0;
-  }
-
-  .item-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #ffffff;
-    margin: 0;
-  }
-
-  .item-subtitle {
-    font-size: 11px;
-    color: #94a3b8;
-    margin: 2px 0 0 0;
-
-    strong {
-      color: #e2e8f0;
-    }
-
-    ion-icon {
-      font-size: 13px;
-      color: #38bdf8;
-    }
-  }
-
-  .badge-estado {
-    background-color: #0f172a;
-    color: #38bdf8;
-    border: 1px solid #334155;
-    font-size: 10px;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-weight: 600;
+    color: #60a5fa;
     flex-shrink: 0;
 
-    &.aprobada {
-      color: #4ade80;
-      border-color: rgba(74, 222, 128, 0.4);
-    }
-
-    &.rechazada {
-      color: #f87171;
-      border-color: rgba(248, 113, 113, 0.4);
+    &.is-top {
+      background-color: #e2e8f0;
+      color: #09111e;
     }
   }
 
-  .btn-outline-secondary {
-    background-color: #0f172a;
-    color: #94a3b8;
-    border: 1px solid #334155;
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-
-    &:active {
-      opacity: 0.8;
-    }
+  .item-text {
+    min-width: 0;
+    text-align: left;
   }
 }
 
-.text-muted {
-  color: #94a3b8 !important;
-  font-size: 12px;
+.item-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.item-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #8b9bb4;
+  margin: 3px 0 0 0;
+  line-height: 1.35;
+
+  strong {
+    color: #e2e8f0;
+  }
+
+  ion-icon {
+    font-size: 13px;
+    color: #60a5fa;
+    flex-shrink: 0;
+  }
+}
+
+/* ==================== BADGES DE ESTADO ==================== */
+.badge-estado {
+  background-color: rgba(34, 197, 94, 0.16);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  font-size: 10.5px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-weight: 600;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  &.aprobada {
+    background-color: rgba(34, 197, 94, 0.16);
+    color: #22c55e;
+    border-color: rgba(34, 197, 94, 0.25);
+  }
+
+  &.rechazada {
+    background-color: rgba(239, 68, 68, 0.16);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.25);
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 28px 12px;
+  color: #8b9bb4;
+  font-size: 12.5px;
+}
+
+/* ==================== BARRA DE NAVEGACIÓN INFERIOR FLOTANTE ==================== */
+.footer-wrapper {
+  background: #09111e;
+  padding: 6px 18px 14px 18px;
 }
 
 .nx-barra {
+  max-width: 504px;
+  margin: 0 auto;
+  background-color: #121e31;
+  border: 1px solid #1e2d44;
+  border-radius: 20px;
+  padding: 10px 8px;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  background-color: #0f172a;
-  border-top: 1px solid #1e293b;
-  padding: 8px 0;
 
   a {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    justify-content: center;
+    gap: 4px;
     text-decoration: none;
     color: #64748b;
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 500;
+    flex: 1;
+    transition: color 0.15s ease;
 
     ion-icon {
       font-size: 20px;
     }
 
     &.activa {
-      color: #38bdf8;
+      color: #ffffff;
+      font-weight: 600;
+
+      ion-icon {
+        color: #ffffff;
+      }
     }
   }
 }

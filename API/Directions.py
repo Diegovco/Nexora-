@@ -207,6 +207,16 @@ def GetReservasByMatricula(strMatricula):
         print("Error en GetReservasByMatricula:", e)
         return jsonify(Messages.err500)
 
+@app.route('/getReservas/aprobadas', methods=['GET'])
+def GetReservasAprobadasUsuario():
+    try:
+        identificador = request.args.get('identificador', '')
+        rol = request.args.get('rol', 'Estudiante')
+        return CallMethod.fnGetReservasAprobadasUsuario(identificador, rol)
+    except Exception as e:
+        print("Error en GetReservasAprobadasUsuario:", e)
+        return jsonify(Messages.err500)
+
 @app.route('/reservas', methods=['POST'])
 def PostReserva():
     try:

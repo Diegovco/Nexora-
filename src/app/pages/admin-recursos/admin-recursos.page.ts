@@ -1,10 +1,16 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { IonContent, IonFooter, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addOutline, cubeOutline, peopleOutline, barChartOutline, logOutOutline } from 'ionicons/icons';
+import {
+  addOutline,
+  homeOutline,
+  addCircleOutline,
+  documentTextOutline,
+  checkmarkDoneOutline
+} from 'ionicons/icons';
 import { RecursosService, Recurso } from '../../services/recursos.service';
 
 export interface RecursoMongo extends Recurso {
@@ -16,7 +22,7 @@ export interface RecursoMongo extends Recurso {
   templateUrl: './admin-recursos.page.html',
   styleUrls: ['./admin-recursos.page.scss'],
   standalone: true,
-  imports: [IonContent, IonFooter, IonIcon, FormsModule, RouterLink]
+  imports: [IonContent, IonFooter, IonIcon, FormsModule, RouterLink, RouterLinkActive]
 })
 export class AdminRecursosPage {
   private apiUrl = 'http://localhost:5000';
@@ -31,7 +37,13 @@ export class AdminRecursosPage {
     private router: Router,
     private http: HttpClient
   ) {
-    addIcons({ addOutline, cubeOutline, peopleOutline, barChartOutline, logOutOutline });
+    addIcons({
+      addOutline,
+      homeOutline,
+      addCircleOutline,
+      documentTextOutline,
+      checkmarkDoneOutline
+    });
   }
 
   // Se ejecuta cada vez que entras a la pantalla (también al regresar de "Nuevo recurso")

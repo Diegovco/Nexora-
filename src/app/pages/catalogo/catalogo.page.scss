@@ -1,20 +1,15 @@
-ion-toolbar {
-  --background: #0a121e;
-  --border-color: #1e293b;
-  --color: #ffffff;
-  --padding-start: 16px;
-  --padding-end: 16px;
+ion-header {
+  background: #09111e;
 }
-.notification-btn {
-  --color: #94a3b8;
-  --background: #1e293b;
-  --border-radius: 50%;
-  width: 40px;
-  height: 40px;
 
-  ion-icon {
-    font-size: 20px;
-  }
+ion-toolbar {
+  --background: #09111e;
+  --border-color: transparent;
+  --color: #ffffff;
+  --padding-start: 18px;
+  --padding-end: 18px;
+  --padding-top: 12px;
+  --padding-bottom: 8px;
 }
 
 .logo-container {
@@ -24,15 +19,16 @@ ion-toolbar {
 }
 
 .logo {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: #0f172a;
-  border: 2px solid #1e293b;
+  background: #121e31;
+  border: 1.5px solid #24354f;
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  flex-shrink: 0;
 
   img {
     width: 100%;
@@ -42,38 +38,116 @@ ion-toolbar {
 }
 
 .app-title {
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 700;
   color: #ffffff;
   margin: 0;
 }
 
-.filter-btn {
-  --color: #94a3b8;
-  --background: #1e293b;
+.notification-btn {
+  --color: #cbd5e1;
+  --background: #132035;
+  --background-hover: #1c2e4a;
   --border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  --padding-start: 0;
+  --padding-end: 0;
+  width: 38px;
+  height: 38px;
+  margin: 0;
+  border: 1px solid #1e2d44;
+  border-radius: 50%;
+
+  ion-icon {
+    font-size: 18px;
+  }
+}
+
+/* ==================== CONTENIDO INTERNO DEL MENÚ ==================== */
+::ng-deep ion-popover.nx-header-popover {
+  --background: #121e31;
+}
+
+::ng-deep .nx-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background-color: #121e31;
+}
+
+::ng-deep .nx-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: #e2e8f0;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  ion-icon {
+    font-size: 18px;
+    color: #60a5fa;
+    flex-shrink: 0;
+  }
+
+  &:hover,
+  &:active {
+    background-color: #1a2942;
+  }
+
+  &.nx-menu-danger {
+    color: #f87171;
+
+    ion-icon {
+      color: #f87171;
+    }
+
+    &:hover,
+    &:active {
+      background-color: rgba(248, 113, 113, 0.14);
+    }
+  }
+}
+
+::ng-deep .nx-menu-divider {
+  height: 1px;
+  background-color: #1e2d44;
+  margin: 4px 8px;
 }
 
 .login-fondo {
-  --background: #0a121e;
-  --border-color: #1e293b;
+  --background: #09111e;
   --color: #ffffff;
-  --padding-start: 16px;
-  --padding-end: 16px;
 }
 
-/* --- BUSCADOR --- */
+.main-wrapper {
+  padding: 6px 18px 28px 18px;
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+/* ==================== BUSCADOR ==================== */
 .search-box {
-  background-color: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 12px;
-  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #121e31;
+  border: 1px solid #1e2d44;
+  border-radius: 14px;
+  padding: 11px 14px;
+  margin-bottom: 14px;
 
   .search-icon {
     color: #64748b;
-    font-size: 13px;
+    font-size: 17px;
+    flex-shrink: 0;
   }
 
   .search-input {
@@ -81,7 +155,7 @@ ion-toolbar {
     border: none;
     outline: none;
     color: #ffffff;
-    font-size: 17px;
+    font-size: 13px;
     width: 100%;
 
     &::placeholder {
@@ -90,79 +164,176 @@ ion-toolbar {
   }
 }
 
-/* --- CHIPS / FILTROS --- */
+/* ==================== CHIPS / FILTROS ==================== */
+.chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
 .chip-filter {
-  background-color: #1e293b;
+  background-color: #121e31;
   color: #94a3b8;
-  border: 1px solid #334155;
-  border-radius: 20px;
-  padding: 6px 16px;
-  font-size: 13px;
+  border: 1px solid #1e2d44;
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.15s ease;
 
   &.active {
     background-color: #ffffff;
-    color: #0f172a;
+    color: #09111e;
     border-color: #ffffff;
   }
 }
 
-/* --- TARJETAS DE ELEMENTOS --- */
+/* ==================== TARJETAS DE RECURSOS ==================== */
+.lista-recursos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .item-card {
-  background-color: #1e293b;
-  border-radius: 25px;
-  padding: 14px 16px;
-  border: 1px solid #334155;
-  margin:5px;
+  background-color: #121e31;
+  border-radius: 14px;
+  padding: 12px 14px;
+  border: 1px solid #1e2d44;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  .item-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+  }
 
   .icon-box {
-    width: 50px;
-    height: 50px;
-    background-color: #0f172a;
-    border-radius: 15px;
+    min-width: 44px;
+    height: 44px;
+    padding: 0 6px;
+    background-color: #1a2942;
+    border-radius: 11px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
+    font-size: 10.5px;
     font-weight: 700;
-    color: #38bdf8;
-    border: 1px solid #334155;
+    color: #60a5fa;
+    flex-shrink: 0;
+    letter-spacing: 0.3px;
+  }
+
+  .item-text {
+    min-width: 0;
+    text-align: left;
   }
 
   .item-title {
-    font-size: 15px;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 600;
     color: #ffffff;
-    margin: 1px;
+    margin: 0;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .item-subtitle {
-    font-size: 13px;
-    color: #94a3b8;
-    margin: 2px 0 0 0;
+    font-size: 10.5px;
+    color: #8b9bb4;
+    margin: 3px 0 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
-/* --- BADGES DE ESTADO --- */
+/* ==================== BADGES DE ESTADO ==================== */
 .badge-status {
-  font-size: 14px;
+  font-size: 10.5px;
   font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 8px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  text-transform: capitalize;
 
   &.disponible {
-    background-color: rgba(34, 197, 94, 0.15);
+    background-color: rgba(34, 197, 94, 0.16);
     color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.25);
   }
 
   &.ocupado {
-    background-color: rgba(239, 68, 68, 0.15);
+    background-color: rgba(239, 68, 68, 0.16);
     color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.25);
   }
 
   &.mantenimiento {
-    background-color: rgba(148, 163, 184, 0.15);
-    color: #94a3b8;
+    background-color: rgba(148, 163, 184, 0.16);
+    color: #cbd5e1;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 28px 12px;
+  color: #8b9bb4;
+  font-size: 12.5px;
+}
+
+/* ==================== BARRA DE NAVEGACIÓN INFERIOR FLOTANTE ==================== */
+.footer-wrapper {
+  background: #09111e;
+  padding: 6px 18px 14px 18px;
+}
+
+.nx-barra {
+  max-width: 504px;
+  margin: 0 auto;
+  background-color: #121e31;
+  border: 1px solid #1e2d44;
+  border-radius: 20px;
+  padding: 10px 8px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+
+  a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    text-decoration: none;
+    color: #64748b;
+    font-size: 10.5px;
+    font-weight: 500;
+    flex: 1;
+    transition: color 0.15s ease;
+
+    ion-icon {
+      font-size: 20px;
+    }
+
+    &.activa {
+      color: #ffffff;
+      font-weight: 600;
+
+      ion-icon {
+        color: #ffffff;
+      }
+    }
   }
 }

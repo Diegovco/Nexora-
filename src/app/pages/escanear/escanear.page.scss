@@ -1,70 +1,403 @@
+.login-fondo {
+  --background: #09111e;
+  --color: #ffffff;
+}
+
+.nx-pagina {
+  padding: 16px 18px 28px 18px;
+  max-width: 540px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ==================== ENCABEZADO ==================== */
+.nx-encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.nx-titulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #121e31;
+    border: 1.5px solid #24354f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  h1 {
+    font-size: 19px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+  }
+}
+
+.nx-insignia {
+  background-color: #132035;
+  color: #cbd5e1;
+  border: 1px solid #1e2d44;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* ==================== SELECTOR PRÉSTAMO / DEVOLUCIÓN ==================== */
 .modos {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 14px;
-  background: var(--nx-tarjeta);
+  gap: 6px;
+  padding: 5px;
+  border-radius: 999px;
+  background-color: #121e31;
+  border: 1px solid #1e2d44;
+
+  button {
+    height: 38px;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &.activo {
+      background-color: #ffffff;
+      color: #09111e;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+  }
 }
-.modos button {
-  height: 40px;
-  border-radius: 12px;
-  background: transparent;
-  color: #DCE6F1;
-  font-size: 14px;
-  font-weight: 600;
-}
-.modos button.activo {
-  background: #FFFFFF;
-  color: var(--nx-fondo);
-}
+
+/* ==================== ZONA DE CÁMARA / ESCÁNER QR ==================== */
 .camara {
-  height: 230px;
+  padding: 20px 16px 10px 16px;
   border-radius: 20px;
-  background: #050B14;
+  background: transparent;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 16px;
+
+  p {
+    margin: 0;
+    font-size: 12px;
+    color: #8b9bb4;
+    text-align: center;
+  }
 }
+
 .marco {
-  width: 150px;
-  height: 150px;
-  border: 3px dashed #5AB4F0;
-  border-radius: 16px;
+  position: relative;
+  width: 164px;
+  height: 164px;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  ion-icon {
+    font-size: 112px;
+    color: #f8fafc;
+  }
+
+  .esquina {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border-color: #60a5fa;
+    border-style: solid;
+    border-width: 0;
+
+    &.tl {
+      top: 0;
+      left: 0;
+      border-top-width: 3.5px;
+      border-left-width: 3.5px;
+      border-top-left-radius: 14px;
+    }
+
+    &.tr {
+      top: 0;
+      right: 0;
+      border-top-width: 3.5px;
+      border-right-width: 3.5px;
+      border-top-right-radius: 14px;
+    }
+
+    &.bl {
+      bottom: 0;
+      left: 0;
+      border-bottom-width: 3.5px;
+      border-left-width: 3.5px;
+      border-bottom-left-radius: 14px;
+    }
+
+    &.br {
+      bottom: 0;
+      right: 0;
+      border-bottom-width: 3.5px;
+      border-right-width: 3.5px;
+      border-bottom-right-radius: 14px;
+    }
+  }
 }
-.marco ion-icon {
-  font-size: 90px;
-  color: #FFFFFF;
-}
-.camara p {
-  margin: 0;
-  font-size: 13px;
-  color: var(--nx-gris);
-}
+
+/* ==================== BUSCADOR MANUAL ==================== */
 .buscar {
   display: flex;
   gap: 8px;
   align-items: center;
+
+  .nx-input {
+    flex: 1;
+    height: 44px;
+    background-color: #121e31;
+    border: 1px solid #1e2d44;
+    border-radius: 13px;
+    padding: 0 14px;
+    color: #ffffff;
+    font-size: 13px;
+    outline: none;
+
+    &::placeholder {
+      color: #64748b;
+    }
+
+    &:focus {
+      border-color: #3b82f6;
+    }
+  }
+
+  .nx-boton-sec {
+    height: 44px;
+    padding: 0 16px;
+    background-color: #132035;
+    color: #e2e8f0;
+    border: 1px solid #2b3f5e;
+    border-radius: 13px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+
+    &:active {
+      background-color: #1e3150;
+    }
+  }
 }
-.buscar .nx-boton-sec {
-  height: 50px;
-}
+
 .mensaje {
   margin: 0;
-  font-size: 14px;
-  color: #F7C36B;
+  padding: 10px 14px;
+  background-color: rgba(247, 195, 107, 0.12);
+  border: 1px solid rgba(247, 195, 107, 0.28);
+  border-radius: 12px;
+  font-size: 12.5px;
+  color: #f7c36b;
+  text-align: center;
 }
-.resultado {
+
+/* ==================== TARJETA DE RESULTADO ==================== */
+.nx-tarjeta.resultado {
+  background-color: #121e31;
+  border: 1px solid #1e2d44;
+  border-radius: 18px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
-.resultado strong {
-  font-size: 16px;
-  color: #FFFFFF;
+
+.resultado-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+
+  .resultado-titulo {
+    min-width: 0;
+    text-align: left;
+
+    strong {
+      display: block;
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.3;
+    }
+
+    .nx-gris {
+      font-size: 11.5px;
+      color: #8b9bb4;
+      margin: 3px 0 0 0;
+    }
+  }
+}
+
+.nx-estado {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 4px 11px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  text-transform: capitalize;
+  background-color: rgba(34, 197, 94, 0.16);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+
+  &.disponible {
+    background-color: rgba(34, 197, 94, 0.16);
+    color: #22c55e;
+    border-color: rgba(34, 197, 94, 0.25);
+  }
+
+  &.ocupado,
+  &.prestado {
+    background-color: rgba(239, 68, 68, 0.16);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.25);
+  }
+
+  &.mantenimiento {
+    background-color: rgba(148, 163, 184, 0.16);
+    color: #cbd5e1;
+    border-color: rgba(148, 163, 184, 0.25);
+  }
+}
+
+.resultado-detalles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+
+  .detalle-box {
+    background-color: #0d1626;
+    border: 1px solid #1e2d44;
+    border-radius: 12px;
+    padding: 10px 12px;
+    text-align: left;
+
+    span {
+      display: block;
+      font-size: 10px;
+      color: #8b9bb4;
+      margin-bottom: 3px;
+    }
+
+    strong {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+  }
+}
+
+.nx-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+
+  .nx-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #cbd5e1;
+  }
+
+  select.nx-input {
+    height: 42px;
+    background-color: #0d1626;
+    border: 1px solid #1e2d44;
+    border-radius: 12px;
+    padding: 0 12px;
+    color: #ffffff;
+    font-size: 13px;
+    outline: none;
+  }
+}
+
+.nx-boton {
+  width: 100%;
+  height: 46px;
+  background-color: #e2e8f0;
+  color: #09111e;
+  border: none;
+  border-radius: 14px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+/* ==================== BARRA DE NAVEGACIÓN INFERIOR FLOTANTE ==================== */
+.footer-wrapper {
+  background: #09111e;
+  padding: 6px 18px 14px 18px;
+}
+
+.nx-barra {
+  max-width: 504px;
+  margin: 0 auto;
+  background-color: #121e31;
+  border: 1px solid #1e2d44;
+  border-radius: 20px;
+  padding: 10px 8px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+
+  a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    text-decoration: none;
+    color: #64748b;
+    font-size: 10.5px;
+    font-weight: 500;
+    flex: 1;
+    transition: color 0.15s ease;
+
+    ion-icon {
+      font-size: 20px;
+    }
+
+    &.activa {
+      color: #ffffff;
+      font-weight: 600;
+
+      ion-icon {
+        color: #ffffff;
+      }
+    }
+  }
 }

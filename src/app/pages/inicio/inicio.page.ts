@@ -11,20 +11,22 @@ import {
   IonButtons,
   IonButton,
   IonIcon,
-  IonFooter
+  IonFooter,
+  IonPopover
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   notificationsOutline,
-  personCircleOutline,
+  personOutline,
   logOutOutline,
   homeOutline,
   gridOutline,
   alertCircleOutline,
-  scanCircleOutline,
+  receiptOutline,
   documentTextOutline,
-  folderOpenOutline,
-  addCircleOutline
+  checkmarkDoneOutline,
+  addCircleOutline,
+  ellipsisVertical
 } from 'ionicons/icons';
 import { Recurso } from '../../services/recursos.service';
 
@@ -54,7 +56,8 @@ export interface EstadisticaCategoria {
     IonButtons,
     IonButton,
     IonIcon,
-    IonFooter
+    IonFooter,
+    IonPopover
   ],
 })
 export class InicioPage implements OnInit {
@@ -63,6 +66,7 @@ export class InicioPage implements OnInit {
   esEstudiante = true;
 
   // Datos del usuario activo
+  nombreUsuario = 'Nexora';
   matriculaUsuario = '';
   correoUsuario = '';
   fechaHoy = '';
@@ -90,15 +94,16 @@ export class InicioPage implements OnInit {
   ) {
     addIcons({
       'notifications-outline': notificationsOutline,
-      'person-circle-outline': personCircleOutline,
+      'person-outline': personOutline,
       'log-out-outline': logOutOutline,
       'home-outline': homeOutline,
       'grid-outline': gridOutline,
       'alert-circle-outline': alertCircleOutline,
-      'scan-circle-outline': scanCircleOutline,
+      'receipt-outline': receiptOutline,
       'document-text-outline': documentTextOutline,
-      'folder-open-outline': folderOpenOutline,
-      'add-circle-outline': addCircleOutline
+      'checkmark-done-outline': checkmarkDoneOutline,
+      'add-circle-outline': addCircleOutline,
+      'ellipsis-vertical': ellipsisVertical
     });
   }
 
@@ -132,7 +137,7 @@ export class InicioPage implements OnInit {
 
   private obtenerRangoSemanaActual(): { inicio: string; fin: string } {
     const hoy = new Date();
-    const diaSemana = hoy.getDay(); // 0 = Domingo, 1 = Lunes ... 6 = Sábado
+    const diaSemana = hoy.getDay();
     const diffLunes = diaSemana === 0 ? -6 : 1 - diaSemana;
 
     const lunes = new Date(hoy);
@@ -153,6 +158,7 @@ export class InicioPage implements OnInit {
       this.esEstudiante = true;
       this.matriculaUsuario = '';
       this.correoUsuario = '';
+      this.nombreUsuario = 'Nexora';
       return;
     }
 
@@ -162,12 +168,44 @@ export class InicioPage implements OnInit {
       this.correoUsuario = (user.strcorreoUsuario || user.correo || user.email || '').trim();
       this.matriculaUsuario = (user.strmatricula || user.matricula || '').trim();
       this.esEstudiante = !(rol === 'Administrativo' || this.correoUsuario.startsWith('A'));
+
+      const nombreCompleto = (
+        user.strnombreUsuario ||
+        user.strnombre ||
+        user.nombre ||
+        user.name ||
+        ''
+      ).trim();
+
+      if (nombreCompleto) {
+        this.nombreUsuario = nombreCompleto.split(' ')[0];
+      } else if (this.correoUsuario) {
+        this.nombreUsuario = this.correoUsuario.split('@')[0];
+      } else {
+        this.nombreUsuario = this.esEstudiante ? 'Estudiante' : 'Admin';
+      }
     } catch {
       this.esEstudiante = true;
+      this.nombreUsuario = 'Nexora';
     }
   }
 
-  // ==================== NORMALIZADORES DE CAMPOS MONGODB ====================
+  obtenerSiglaRecurso(r: RecursoInicio): string {
+    const cat = (r.categoria || '').toLowerCase();
+    const cod = (r.codigo || '').toUpperCase();
+    if (cat.includes('libro') || cod.startsWith('LIB')) return 'LIB';
+    if (cat.includes('lab') || cod.startsWith('LAB')) return 'LAB';
+    if (cat.includes('equipo') || cat.includes('av') || cod.startsWith('AV') || cod.startsWith('EQ')) return 'AV';
+    return (r.codigo || 'REC').slice(0, 3).toUpperCase();
+  }
+
+  // NORMALIZADORES DE CAMPOS MONGODB
+
+  private extraerId(rawId: any): string {
+    if (!rawId) return '';
+    if (typeof rawId === 'object' && rawId.$oid) return String(rawId.$oid).trim();
+    return String(rawId).trim();
+  }
 
   private normalizarFechaISO(raw: any): string {
     const s = String(raw || '').trim().slice(0, 10);
@@ -181,9 +219,9 @@ export class InicioPage implements OnInit {
 
   private normalizarReserva(r: any) {
     return {
-      _id: r._id || r.reserva_id || '',
-      recursoId: r.recursoId || r.recurso_id || r.codigoRecurso || r.strcodigo || '',
-      codigoRecurso: r.codigoRecurso || r.codigo || r.strcodigo || '',
+      _id: this.extraerId(r._id || r.reserva_id),
+      recursoId: this.extraerId(r.recursoId || r.recurso_id) || String(r.codigoRecurso || r.strcodigo || '').trim(),
+      codigoRecurso: String(r.codigoRecurso || r.codigo || r.strcodigo || '').trim(),
       nombreRecurso:
         r.nombreRecurso ||
         r.strnombreRecurso ||
@@ -216,38 +254,69 @@ export class InicioPage implements OnInit {
     };
   }
 
-  // ==================== LÓGICA ESTUDIANTE ====================
+  // LÓGICA ESTUDIANTE: toma el recurso más reciente de cada tipo sin importar su estado
 
   cargarDisponibles() {
-    this.http.get<any>(`${this.apiUrl}/getRecursos`).subscribe({
-      next: (resp) => {
-        this.zone.run(() => {
-          const lista = Array.isArray(resp) ? resp : (resp?.Respuesta || []);
-          this.disponibles = lista
-            .map((item: any) => ({
-              _id: item._id,
-              codigo: item.codigo || item.strcodigo || '',
+    this.http.get<any>(`${this.apiUrl}/getRecursos?t=${Date.now()}`).pipe(
+      catchError(() => of({ Respuesta: [] }))
+    ).subscribe((recursosResp) => {
+      this.zone.run(() => {
+        const lista: any[] = Array.isArray(recursosResp)
+          ? recursosResp
+          : (recursosResp?.Respuesta || []);
+
+        const todos: Array<RecursoInicio & { orden: number; fechaRegistro: string }> = lista.map(
+          (item: any, idx: number) => {
+            const id = this.extraerId(item._id);
+            const codigo = String(item.codigo || item.strcodigo || '').trim();
+            const rawCantidad = item.cantidad ?? item.intcantidad;
+            const cantidad = rawCantidad !== undefined && rawCantidad !== null ? Number(rawCantidad) : 1;
+
+            return {
+              _id: id,
+              codigo,
               nombre: item.nombre || item.strnombre || '',
               categoria: item.categoria || item.strcategoria || '',
               ubicacion: item.ubicacion || item.strubicacion || '',
               estado: item.estado || item.strestado || 'Disponible',
-              cantidad: Number(item.cantidad ?? item.intcantidad ?? 1),
-              descripcion: item.descripcion || item.strdescripcion || ''
-            }))
-            .filter((r: RecursoInicio) =>
-              r.estado.toLowerCase() === 'disponible' && r.cantidad <= 5
-            )
-            .slice(0, 5);
-          this.cdr.detectChanges();
+              cantidad,
+              descripcion: item.descripcion || item.strdescripcion || '',
+              orden: idx,
+              fechaRegistro: String(item.fechaCreacion || item.createdAt || item.fecha || '').trim()
+            };
+          }
+        );
+
+        // Ordenar del más reciente al más antiguo
+        todos.sort((a, b) => {
+          if (a.fechaRegistro && b.fechaRegistro && a.fechaRegistro !== b.fechaRegistro) {
+            return b.fechaRegistro.localeCompare(a.fechaRegistro);
+          }
+          if (a._id && b._id && a._id.length === 24 && b._id.length === 24 && a._id !== b._id) {
+            return b._id.localeCompare(a._id);
+          }
+          return b.orden - a.orden;
         });
-      },
-      error: (err) => {
-        console.error('Error al cargar disponibles desde MongoDB:', err);
-        this.zone.run(() => {
-          this.disponibles = [];
-          this.cdr.detectChanges();
-        });
-      }
+
+        const categoriasObjetivo: Array<'Libro' | 'Laboratorio' | 'Equipo AV'> = [
+          'Libro',
+          'Laboratorio',
+          'Equipo AV'
+        ];
+
+        const masRecientePorTipo: RecursoInicio[] = [];
+        for (const catObj of categoriasObjetivo) {
+          const encontrado = todos.find(
+            (r) => this.normalizarCategoria(r.categoria, r.codigo) === catObj
+          );
+          if (encontrado) {
+            masRecientePorTipo.push(encontrado);
+          }
+        }
+
+        this.disponibles = masRecientePorTipo;
+        this.cdr.detectChanges();
+      });
     });
   }
 
@@ -350,7 +419,7 @@ export class InicioPage implements OnInit {
     });
   }
 
-  // ==================== LÓGICA ADMINISTRATIVO (CANTIDADES) ====================
+  // LÓGICA ADMINISTRATIVO
 
   private normalizarCategoria(rawCat: string, codigo: string): 'Libro' | 'Laboratorio' | 'Equipo AV' | '' {
     const c = (rawCat || '').toLowerCase().trim();

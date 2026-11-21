@@ -50,17 +50,21 @@
 
 <ion-footer class="ion-no-border">
   <nav class="nx-barra">
-    <a routerLink="/inicio" routerLinkActive="activa">
-        <ion-icon name="home-outline"></ion-icon>Inicio
+  <a routerLink="/inicio" routerLinkActive="activa" [routerLinkActiveOptions]="{ exact: true }">
+        <ion-icon name="home-outline"></ion-icon>
+        <span>Inicio</span>
       </a>
       <a routerLink="/nuevo-recurso" routerLinkActive="activa">
-        <ion-icon name="add-circle-outline"></ion-icon>Recurso
+        <ion-icon name="add-circle-outline"></ion-icon>
+        <span>Recurso</span>
       </a>
       <a routerLink="/gestion-reservas" routerLinkActive="activa">
-        <ion-icon name="document-text-outline"></ion-icon>Gestión
+        <ion-icon name="document-text-outline"></ion-icon>
+        <span>Gestión</span>
       </a>
       <a routerLink="/registros" routerLinkActive="activa">
-        <ion-icon name="folder-open-outline"></ion-icon>Aprovadas
+        <ion-icon name="checkmark-done-outline"></ion-icon>
+        <span>Aprobadas</span>
       </a>
   </nav>
 </ion-footer>

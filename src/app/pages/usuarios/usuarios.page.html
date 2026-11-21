@@ -1,123 +1,154 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <h1 class="app-title" slot="start">{{ nombre || 'Usuario' }}</h1>
+    <div class="logo-container" slot="start">
+      <div class="logo">
+        <img src="assets/img/nexora-logo.png" alt="Nexora Logo" />
+      </div>
+      <div class="header-text">
+        <span class="sub-hola">Perfil activo</span>
+        <h1 class="app-title">{{ nombre || 'Usuario' }}</h1>
+      </div>
+    </div>
 
     <ion-buttons slot="end">
-      <ion-button class="notification-btn" (click)="cerrarSesion()" title="Salir">
-        <ion-icon name="log-out-outline" slot="icon-only" style="color: #f87171;"></ion-icon>
+      <ion-button class="logout-btn" (click)="cerrarSesion()" title="Cerrar sesión">
+        <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="login-fondo">
-  <div class="container mt-3">
+  <div class="main-wrapper">
     <!-- Tarjeta con nombre, rol, correo y matrícula del usuario activo -->
-    <div class="row justify-content-center mb-3">
-      <div class="item-card profile-card col-11 col-md-10">
-        <div class="d-flex align-items-center">
-          <div class="avatar-box me-3">
-            {{ (nombre || correo || 'U').slice(0, 2).toUpperCase() }}
-          </div>
-          <div class="text-start">
+    <div class="item-card profile-card">
+      <div class="profile-top">
+        <div class="avatar-box">
+          {{ (nombre || correo || 'U').slice(0, 2).toUpperCase() }}
+        </div>
+        <div class="profile-info">
+          <div class="profile-name-row">
             <h4 class="item-title">{{ nombre || correo || 'Sin nombre' }}</h4>
-            <p class="item-subtitle d-flex align-items-center gap-1 mt-1">
-              <ion-icon name="id-card-outline"></ion-icon>
-              Matrícula: <strong>{{ matricula || 'No registrada' }}</strong>
-            </p>
-            <p class="item-subtitle d-flex align-items-center gap-1 mt-1">
-              <ion-icon name="mail-outline"></ion-icon>
-              Correo: <strong>{{ correo || 'No registrado' }}</strong>
-            </p>
             @if (rol) {
-              <p class="item-subtitle mt-1">
-                Rol: <strong>{{ rol }}</strong>
-              </p>
+              <span class="rol-pill">
+                <ion-icon name="shield-checkmark-outline"></ion-icon>
+                {{ rol }}
+              </span>
             }
+          </div>
+
+          <div class="profile-meta">
+            <p class="item-subtitle">
+              <ion-icon name="card-outline"></ion-icon>
+              <span>Matrícula: <strong>{{ matricula || 'No registrada' }}</strong></span>
+            </p>
+            <p class="item-subtitle">
+              <ion-icon name="at-outline"></ion-icon>
+              <span>Correo: <strong>{{ correo || 'No registrado' }}</strong></span>
+            </p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Título dinámico de la Pila LIFO según rol -->
-    <div class="row justify-content-center mb-2">
-      <div class="col-11 col-md-10 d-flex justify-content-between align-items-center">
-        <h5 class="section-title m-0">
-          {{ esEstudiante ? 'Mis Reservas Aprobadas (Pila LIFO)' : 'Reservas Aprobadas por mí (Pila LIFO)' }}
-        </h5>
-        <span class="text-muted">Total: <strong>{{ historialReservas.length }}</strong></span>
-      </div>
+    <div class="section-header">
+      <h5 class="section-title">
+        {{ esEstudiante ? 'Mis Reservas Aprobadas (Pila LIFO)' : 'Reservas Aprobadas por mí (Pila LIFO)' }}
+      </h5>
+      <span class="badge-total">{{ historialReservas.length }} total</span>
     </div>
 
     <!-- Lista de reservas en orden LIFO (la más reciente en el tope) -->
     @if (cargando) {
-      <div class="text-center text-muted mt-4">
+      <div class="empty-state">
         <p>Cargando historial...</p>
       </div>
     } @else {
-      @for (res of historialReservas; track res.reserva_id || $index; let i = $index) {
-        <div class="row justify-content-center mb-2">
-          <div class="item-card col-11 col-md-10">
-            <div class="d-flex align-items-center justify-content-between">
-              <div class="d-flex align-items-center">
-                <div class="icon-box me-3">{{ i === 0 ? 'TOP' : '#' + (historialReservas.length - i) }}</div>
-                <div class="text-start">
-                  <h4 class="item-title">{{ res.nombreRecurso }} ({{ res.codigoRecurso }})</h4>
-                  @if (!esEstudiante) {
-                    <p class="item-subtitle">Solicitante: <strong>{{ res.solicitante }}</strong></p>
-                  }
-                  <p class="item-subtitle">{{ res.ubicacion }}</p>
-                  <p class="item-subtitle">{{ res.fecha }} · {{ res.horaInicio }} – {{ res.horaFin }}</p>
-                  <p class="item-subtitle">Movimiento: {{ res.fechaMovimiento }}</p>
-                </div>
+      <div class="lista-historial">
+        @for (res of historialReservas; track res.reserva_id || $index; let i = $index) {
+          <div class="item-card historial-item" [class.top-item]="i === 0">
+            <div class="item-info">
+              <div class="icon-box" [class.is-top]="i === 0">
+                {{ i === 0 ? 'TOP' : '#' + (historialReservas.length - i) }}
               </div>
+              <div class="item-text">
+                <h4 class="item-title">{{ res.nombreRecurso }} ({{ res.codigoRecurso }})</h4>
+                @if (!esEstudiante) {
+                  <p class="item-subtitle">Solicitante: <strong>{{ res.solicitante }}</strong></p>
+                }
+                <p class="item-subtitle">{{ res.ubicacion }}</p>
+                <p class="item-subtitle">{{ res.fecha }} · {{ res.horaInicio }} – {{ res.horaFin }}</p>
+                <p class="item-subtitle">Movimiento: {{ res.fechaMovimiento }}</p>
+              </div>
+            </div>
+
+            <div class="acciones-derecha" style="display: flex; align-items: center; gap: 8px;">
+              @if (esEstudiante) {
+                <button
+                  type="button"
+                  (click)="irAEscanear(res)"
+                  title="Escanear QR del recurso"
+                  style="width: 36px; height: 36px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); color: #38bdf8; display: flex; align-items: center; justify-content: center; cursor: pointer;"
+                >
+                  <ion-icon name="scan-outline" style="font-size: 18px;"></ion-icon>
+                </button>
+              }
+
               <span class="badge-estado aprobada">
                 {{ res.estado }}
               </span>
             </div>
           </div>
-        </div>
-      } @empty {
-        <div class="text-center text-muted mt-4">
-          <p>
-            {{ esEstudiante
-              ? 'Aún no tienes reservas aprobadas con esta cuenta.'
-              : 'Aún no hay reservas aprobadas registradas.' }}
-          </p>
-        </div>
-      }
+        } @empty {
+          <div class="empty-state">
+            <p>
+              {{ esEstudiante
+                ? 'Aún no tienes reservas aprobadas con esta cuenta.'
+                : 'Aún no hay reservas aprobadas registradas.' }}
+            </p>
+          </div>
+        }
+      </div>
     }
   </div>
 </ion-content>
 
-<ion-footer class="ion-no-border">
+<ion-footer class="ion-no-border footer-wrapper">
   <nav class="nx-barra">
-     @if (esEstudiante) {
-      <a routerLink="/inicio" routerLinkActive="activa">
-        <ion-icon name="home-outline"></ion-icon>Inicio
+    @if (esEstudiante) {
+      <a routerLink="/inicio" routerLinkActive="activa" [routerLinkActiveOptions]="{ exact: true }">
+        <ion-icon name="home-outline"></ion-icon>
+        <span>Inicio</span>
       </a>
       <a routerLink="/catalogo" routerLinkActive="activa">
-        <ion-icon name="grid-outline"></ion-icon>Catálogo
+        <ion-icon name="grid-outline"></ion-icon>
+        <span>Catálogo</span>
       </a>
-      
-      <a routerLink="/escanear" routerLinkActive="activa">
-        <ion-icon name="scan-circle-outline"></ion-icon>Escanear
+      <a routerLink="/mis-reservas" routerLinkActive="activa">
+        <ion-icon name="receipt-outline"></ion-icon>
+        <span>Mis Reservas</span>
       </a>
       <a routerLink="/reportes" routerLinkActive="activa">
-        <ion-icon name="alert-circle-outline"></ion-icon>Reportar
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <span>Reportar</span>
       </a>
     } @else {
-      <a routerLink="/inicio" routerLinkActive="activa">
-        <ion-icon name="home-outline"></ion-icon>Inicio
+      <a routerLink="/inicio" routerLinkActive="activa" [routerLinkActiveOptions]="{ exact: true }">
+        <ion-icon name="home-outline"></ion-icon>
+        <span>Inicio</span>
       </a>
       <a routerLink="/nuevo-recurso" routerLinkActive="activa">
-        <ion-icon name="add-circle-outline"></ion-icon>Recurso
+        <ion-icon name="add-circle-outline"></ion-icon>
+        <span>Recurso</span>
       </a>
       <a routerLink="/gestion-reservas" routerLinkActive="activa">
-        <ion-icon name="document-text-outline"></ion-icon>Gestión
+        <ion-icon name="document-text-outline"></ion-icon>
+        <span>Gestión</span>
       </a>
       <a routerLink="/registros" routerLinkActive="activa">
-        <ion-icon name="folder-open-outline"></ion-icon>Aprovadas
+        <ion-icon name="checkmark-done-outline"></ion-icon>
+        <span>Aprobadas</span>
       </a>
     }
   </nav>

@@ -1,9 +1,16 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { IonContent, IonFooter, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { qrCodeOutline, scanOutline, listOutline, cubeOutline, logOutOutline } from 'ionicons/icons';
+import {
+  qrCodeOutline,
+  scanOutline,
+  homeOutline,
+  gridOutline,
+  alertCircleOutline
+} from 'ionicons/icons';
 import { RecursosService, Recurso } from '../../services/recursos.service';
 
 @Component({
@@ -11,7 +18,15 @@ import { RecursosService, Recurso } from '../../services/recursos.service';
   templateUrl: './escanear.page.html',
   styleUrls: ['./escanear.page.scss'],
   standalone: true,
-  imports: [IonContent, IonFooter, IonIcon, FormsModule, RouterLink]
+  imports: [
+    CommonModule,
+    IonContent,
+    IonFooter,
+    IonIcon,
+    FormsModule,
+    RouterLink,
+    RouterLinkActive
+  ]
 })
 export class EscanearPage {
   modo = 'prestamo';            // 'prestamo' o 'devolucion'
@@ -21,7 +36,13 @@ export class EscanearPage {
   mensaje = '';
 
   constructor(private recursosService: RecursosService) {
-    addIcons({ qrCodeOutline, scanOutline, listOutline, cubeOutline, logOutOutline });
+    addIcons({
+      qrCodeOutline,
+      scanOutline,
+      homeOutline,
+      gridOutline,
+      alertCircleOutline
+    });
   }
 
   cambiarModo(nuevoModo: string) {

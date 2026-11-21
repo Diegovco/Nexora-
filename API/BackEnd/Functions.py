@@ -41,6 +41,8 @@ def fnGetUsers():
                 "_id": str(objUser['_id']),
                 "strnombreUsuario": objUser.get("strnombreUsuario", ""),
                 "strcorreoUsuario": objUser.get("strcorreoUsuario", ""),
+                "strmatricula": objUser.get("strmatricula", ""),
+                "strrol": objUser.get("strrol", ""),
                 "strwebsite": objUser.get("strwebsite", ""),
                 "strcontrasena": objUser.get("strcontrasena", "")
             })
@@ -66,7 +68,7 @@ def fnUpdateUser(strId, objCambios):
     if not ObjectId.is_valid(strId):
         return jsonify({"error": "ID Inválido"}), 400
 
-    camposPermitidos = {"strnombreUsuario", "strcorreoUsuario", "strwebsite", "strcontrasena"}
+    camposPermitidos = {"strnombreUsuario", "strcorreoUsuario", "strmatricula", "strrol", "strwebsite", "strcontrasena"}
     cambios = {k: v for k, v in objCambios.items() if k in camposPermitidos}
 
     if not cambios:
@@ -105,6 +107,8 @@ def fnGetUserByEmail(strCorreo):
             "_id": str(objUser['_id']),
             "strnombreUsuario": objUser.get("strnombreUsuario", ""),
             "strcorreoUsuario": objUser.get("strcorreoUsuario", ""),
+            "strmatricula": objUser.get("strmatricula", ""),
+            "strrol": objUser.get("strrol", ""),
             "strwebsite": objUser.get("strwebsite", ""),
             "strcontrasena": objUser.get("strcontrasena", "")
         }), 200
@@ -315,7 +319,7 @@ def fnGetReservas():
         return jsonify({"error": "Sin conexión a MongoDB"}), 503
     try:
         arrFinalReservas = []
-        listReservas = list(dbReservas.find({}).sort("turno", 1))
+        listReservas = list(dbReservas.find({}).sort([("fechaAprobacion", -1), ("fechaCreacion", -1), ("_id", -1)]))
 
         for objRes in listReservas:
             arrFinalReservas.append({
@@ -326,6 +330,8 @@ def fnGetReservas():
                 "nombreRecurso": objRes.get("nombreRecurso", ""),
                 "ubicacion": objRes.get("ubicacion", ""),
                 "solicitante": objRes.get("solicitante", ""),
+                "matricula": objRes.get("matricula", ""),
+                "correo": objRes.get("correo", ""),
                 "fecha": objRes.get("fecha", ""),
                 "horaInicio": objRes.get("horaInicio", ""),
                 "horaFin": objRes.get("horaFin", ""),
@@ -354,8 +360,12 @@ def fnGetReservasByMatricula(strMatricula):
 
         arrFinalReservas = []
         listReservas = list(
-            dbReservas.find({"solicitante": {"$regex": f"^{matricula_limpia}$", "$options": "i"}})
-            .sort([("fechaCreacion", -1), ("turno", 1)])
+            dbReservas.find({
+                "$or": [
+                    {"solicitante": {"$regex": matricula_limpia, "$options": "i"}},
+                    {"matricula": {"$regex": matricula_limpia, "$options": "i"}}
+                ]
+            }).sort([("fechaCreacion", -1), ("turno", 1)])
         )
 
         for objRes in listReservas:
@@ -367,6 +377,8 @@ def fnGetReservasByMatricula(strMatricula):
                 "nombreRecurso": objRes.get("nombreRecurso", ""),
                 "ubicacion": objRes.get("ubicacion", ""),
                 "solicitante": objRes.get("solicitante", ""),
+                "matricula": objRes.get("matricula", ""),
+                "correo": objRes.get("correo", ""),
                 "fecha": objRes.get("fecha", ""),
                 "horaInicio": objRes.get("horaInicio", ""),
                 "horaFin": objRes.get("horaFin", ""),
@@ -382,6 +394,77 @@ def fnGetReservasByMatricula(strMatricula):
         return jsonify(objResponse), 200
     except Exception as e:
         print("Error en fnGetReservasByMatricula:", e)
+        return jsonify(Messages.err500)
+
+
+def fnGetReservasAprobadasUsuario(strIdentificador, strRol="Estudiante"):
+    if dbReservas is None:
+        return jsonify({"error": "Sin conexión a MongoDB"}), 503
+    try:
+        ident = str(strIdentificador).strip()
+        if not ident:
+            return jsonify({"error": "Identificador requerido"}), 400
+
+        base_ident = ident.split("@")[0].lstrip("aeAE")
+
+        if strRol.lower() == "administrativo":
+            condiciones_admin = [
+                {"aprobadoPor": {"$regex": ident, "$options": "i"}}
+            ]
+            if base_ident and len(base_ident) >= 4:
+                condiciones_admin.append({"aprobadoPor": {"$regex": base_ident, "$options": "i"}})
+
+            filtro = {
+                "estado": {"$in": ["Aprobada", "Atendida", "aprobada", "atendida"]},
+                "$or": condiciones_admin
+            }
+        else:
+            condiciones_est = [
+                {"solicitante": {"$regex": ident, "$options": "i"}},
+                {"matricula": {"$regex": ident, "$options": "i"}},
+                {"correo": {"$regex": ident, "$options": "i"}}
+            ]
+            if base_ident and len(base_ident) >= 4:
+                condiciones_est.append({"solicitante": {"$regex": base_ident, "$options": "i"}})
+                condiciones_est.append({"matricula": {"$regex": base_ident, "$options": "i"}})
+                condiciones_est.append({"correo": {"$regex": base_ident, "$options": "i"}})
+
+            filtro = {
+                "estado": {"$in": ["Aprobada", "Atendida", "aprobada", "atendida"]},
+                "$or": condiciones_est
+            }
+
+        listReservas = list(
+            dbReservas.find(filtro).sort([("fechaAprobacion", -1), ("fechaCreacion", -1), ("_id", -1)])
+        )
+
+        arrFinal = []
+        for objRes in listReservas:
+            arrFinal.append({
+                "_id": str(objRes["_id"]),
+                "turno": objRes.get("turno", 0),
+                "recursoId": objRes.get("recursoId", ""),
+                "codigoRecurso": objRes.get("codigoRecurso", ""),
+                "nombreRecurso": objRes.get("nombreRecurso", ""),
+                "ubicacion": objRes.get("ubicacion", ""),
+                "solicitante": objRes.get("solicitante", ""),
+                "matricula": objRes.get("matricula", ""),
+                "correo": objRes.get("correo", ""),
+                "fecha": objRes.get("fecha", ""),
+                "horaInicio": objRes.get("horaInicio", ""),
+                "horaFin": objRes.get("horaFin", ""),
+                "motivo": objRes.get("motivo", ""),
+                "estado": objRes.get("estado", "Aprobada"),
+                "aprobadoPor": objRes.get("aprobadoPor", ""),
+                "fechaAprobacion": objRes.get("fechaAprobacion", ""),
+                "fechaCreacion": objRes.get("fechaCreacion", "")
+            })
+
+        objResponse = Messages.succ200.copy()
+        objResponse["Respuesta"] = arrFinal
+        return jsonify(objResponse), 200
+    except Exception as e:
+        print("Error en fnGetReservasAprobadasUsuario:", e)
         return jsonify(Messages.err500)
 
 
@@ -405,6 +488,8 @@ def fnInsertReserva(objReserva):
             "nombreRecurso": nombre_recurso,
             "ubicacion": objReserva.get("ubicacion", ""),
             "solicitante": solicitante,
+            "matricula": objReserva.get("matricula", ""),
+            "correo": objReserva.get("correo", ""),
             "fecha": objReserva.get("fecha", ""),
             "horaInicio": objReserva.get("horaInicio", ""),
             "horaFin": objReserva.get("horaFin", ""),

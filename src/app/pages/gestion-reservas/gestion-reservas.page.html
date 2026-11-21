@@ -1,9 +1,14 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <h1 class="app-title" slot="start">Gestión de Reservas</h1>
+    <div class="logo-container" slot="start">
+      <div class="logo">
+        <img src="assets/img/nexora-logo.png" alt="Nexora Logo" />
+      </div>
+      <h1 class="app-title">Gestión de Reservas</h1>
+    </div>
 
     <ion-buttons slot="end">
-      <ion-button class="btn-reservar" routerLink="/reportes" title="Ver Reportes">
+      <ion-button class="btn-header-reportes" routerLink="/reportes" title="Ver Reportes">
         <ion-icon name="bar-chart-outline" slot="start"></ion-icon>
         Reportes
       </ion-button>
@@ -12,84 +17,100 @@
 </ion-header>
 
 <ion-content class="login-fondo">
-  <div class="container mt-3">
-    <!-- Filtro opcional rápido -->
-    <div class="row justify-content-center mb-3">
-      <div class="item-card col-11 col-md-10 p-3">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <label class="form-label mb-0">Todas las solicitudes (Más antiguas primero)</label>
-          <span class="badge-estado">{{ reservasFiltradas.length }} total</span>
-        </div>
+  <div class="main-wrapper">
+    <!-- Filtro rápido -->
+    <div class="item-card filtro-card">
+      <div class="filtro-header">
+        <label class="form-label mb-0">Todas las solicitudes (Más antiguas primero)</label>
+        <span class="badge-total">{{ reservasFiltradas.length }} total</span>
+      </div>
 
-        <div class="d-flex gap-2">
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Filtrar por matrícula, recurso o estado..."
-            [(ngModel)]="filtroTexto"
-            (input)="aplicarFiltro()" />
-          <button type="button" class="btn-reservar d-flex align-items-center gap-1" (click)="cargarTodasLasReservas()">
-            <ion-icon name="refresh-outline"></ion-icon>
-            Actualizar
-          </button>
-        </div>
+      <div class="filtro-row">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Filtrar por matrícula, recurso o estado..."
+          [(ngModel)]="filtroTexto"
+          (input)="aplicarFiltro()"
+        />
+        <button type="button" class="btn-actualizar" (click)="cargarTodasLasReservas()">
+          <ion-icon name="refresh-outline"></ion-icon>
+          <span>Actualizar</span>
+        </button>
       </div>
     </div>
 
     <!-- Listado completo ordenado FIFO -->
     @if (cargando) {
-      <div class="text-center text-muted mt-4">
+      <div class="empty-state">
         <p>Cargando solicitudes desde la base de datos...</p>
       </div>
     } @else {
-      @for (r of reservasFiltradas; track r._id || $index; let i = $index) {
-        <div class="row justify-content-center mb-2">
-          <div class="item-card col-11 col-md-10">
-            <div class="d-flex align-items-center justify-content-between">
-              <div class="d-flex align-items-center">
-                <div class="icon-box me-3">#{{ i + 1 }}</div>
-                <div class="text-start">
+      <div class="lista-reservas">
+        @for (r of reservasFiltradas; track r._id || $index; let i = $index) {
+          <div class="item-card reserva-item">
+            <div class="reserva-top">
+              <div class="reserva-info">
+                <div class="icon-box">#{{ i + 1 }}</div>
+                <div class="reserva-text">
                   <h4 class="item-title">{{ r.nombreRecurso }} ({{ r.codigoRecurso }})</h4>
-                  <p class="item-subtitle">Solicitante: {{ r.solicitante }} · {{ r.ubicacion }}</p>
+                  <p class="item-subtitle">Solicitante: <strong>{{ r.solicitante }}</strong> · {{ r.ubicacion }}</p>
                   <p class="item-subtitle">{{ r.fecha }} · {{ r.horaInicio }} – {{ r.horaFin }}</p>
-                  @if (r.motivo) {
-                    <p class="item-subtitle">Motivo: {{ r.motivo }}</p>
-                  }
                 </div>
               </div>
-              <span class="badge-estado">{{ r.estado }}</span>
+              <span
+                class="badge-estado"
+                [class.aprobada]="r.estado.toLowerCase() === 'aprobada'"
+                [class.rechazada]="r.estado.toLowerCase() === 'rechazada'"
+              >
+                {{ r.estado }}
+              </span>
             </div>
 
+            @if (r.motivo) {
+              <div class="motivo-box">
+                <p class="item-subtitle mb-0"><strong>Motivo:</strong> {{ r.motivo }}</p>
+              </div>
+            }
+
             @if (r.estado.toLowerCase() === 'pendiente') {
-              <div class="d-flex gap-2 mt-2 justify-content-end">
-                <button class="btn-outline-secondary" (click)="cambiarEstado(r, 'Rechazada')">Rechazar</button>
-                <button class="btn-reservar" (click)="cambiarEstado(r, 'Aprobada')">Aprobar</button>
+              <div class="acciones-grid">
+                <button type="button" class="btn-rechazar" (click)="cambiarEstado(r, 'Rechazada')">
+                  Rechazar
+                </button>
+                <button type="button" class="btn-aprobar" (click)="cambiarEstado(r, 'Aprobada')">
+                  Aprobar
+                </button>
               </div>
             }
           </div>
-        </div>
-      } @empty {
-        <div class="text-center text-muted mt-4">
-          <p>No hay reservas registradas en la base de datos.</p>
-        </div>
-      }
+        } @empty {
+          <div class="empty-state">
+            <p>No hay reservas registradas en la base de datos.</p>
+          </div>
+        }
+      </div>
     }
   </div>
 </ion-content>
 
-<ion-footer class="ion-no-border">
+<ion-footer class="ion-no-border footer-wrapper">
   <nav class="nx-barra">
-    <a routerLink="/inicio" routerLinkActive="activa">
-      <ion-icon name="home-outline"></ion-icon>Inicio
+    <a routerLink="/inicio" routerLinkActive="activa" [routerLinkActiveOptions]="{ exact: true }">
+      <ion-icon name="home-outline"></ion-icon>
+      <span>Inicio</span>
     </a>
     <a routerLink="/nuevo-recurso" routerLinkActive="activa">
-      <ion-icon name="add-circle-outline"></ion-icon>Recurso
+      <ion-icon name="add-circle-outline"></ion-icon>
+      <span>Recurso</span>
     </a>
     <a routerLink="/gestion-reservas" routerLinkActive="activa">
-      <ion-icon name="document-text-outline"></ion-icon>Gestión
+      <ion-icon name="document-text-outline"></ion-icon>
+      <span>Gestión</span>
     </a>
     <a routerLink="/registros" routerLinkActive="activa">
-      <ion-icon name="folder-open-outline"></ion-icon>Aprovadas
+      <ion-icon name="checkmark-done-outline"></ion-icon>
+      <span>Aprobadas</span>
     </a>
   </nav>
 </ion-footer>

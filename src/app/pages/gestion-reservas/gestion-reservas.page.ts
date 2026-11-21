@@ -14,11 +14,11 @@ import {
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
-  refreshOutline,
+ refreshOutline,
   homeOutline,
   addCircleOutline,
   documentTextOutline,
-  folderOpenOutline,
+  checkmarkDoneOutline,
   barChartOutline
 } from 'ionicons/icons';
 
@@ -57,11 +57,11 @@ export class GestionReservasPage implements OnInit {
   ) {
     addIcons({
       refreshOutline,
-      homeOutline,
-      addCircleOutline,
-      documentTextOutline,
-      folderOpenOutline,
-      barChartOutline
+  homeOutline,
+  addCircleOutline,
+  documentTextOutline,
+  checkmarkDoneOutline,
+  barChartOutline
     });
   }
 

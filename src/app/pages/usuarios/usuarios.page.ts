@@ -16,11 +16,14 @@ import {
   homeOutline,
   gridOutline,
   addCircleOutline,
-  scanCircleOutline,
+  scanOutline,
+  receiptOutline,
+  alertCircleOutline,
   documentTextOutline,
-  folderOpenOutline,
-  mailOutline,
-  idCardOutline,
+  checkmarkDoneOutline,
+  shieldCheckmarkOutline,
+  cardOutline,
+  atOutline,
   logOutOutline
 } from 'ionicons/icons';
 
@@ -64,11 +67,14 @@ export class UsuariosPage implements OnInit {
       homeOutline,
       gridOutline,
       addCircleOutline,
-      scanCircleOutline,
+      scanOutline,
+      receiptOutline,
+      alertCircleOutline,
       documentTextOutline,
-      folderOpenOutline,
-      mailOutline,
-      idCardOutline,
+      checkmarkDoneOutline,
+      shieldCheckmarkOutline,
+      cardOutline,
+      atOutline,
       logOutOutline
     });
   }
@@ -116,34 +122,36 @@ export class UsuariosPage implements OnInit {
     }
 
     if (this.correo) {
-      this.http.get<any>(`${this.apiUrl}/users/email/${encodeURIComponent(this.correo)}`).subscribe({
-        next: (resp) => {
-          const rawResp = resp?.Respuesta ?? resp;
-          const u = Array.isArray(rawResp) ? rawResp[0] : rawResp;
-          this.zone.run(() => {
-            if (u && typeof u === 'object') {
-              const nombreSrv = this.extraerNombre(u);
-              if (nombreSrv) this.nombre = nombreSrv;
-              this.matricula = String(u.strmatricula || u.matricula || this.matricula).trim();
-              this.rol = String(u.strrol || u.rol || this.rol).trim();
-              this.esEstudiante = !(this.rol === 'Administrativo' || this.correo.toUpperCase().startsWith('A'));
+      this.http
+        .get<any>(`${this.apiUrl}/users/email/${encodeURIComponent(this.correo)}?t=${Date.now()}`)
+        .subscribe({
+          next: (resp) => {
+            const rawResp = resp?.Respuesta ?? resp;
+            const u = Array.isArray(rawResp) ? rawResp[0] : rawResp;
+            this.zone.run(() => {
+              if (u && typeof u === 'object') {
+                const nombreSrv = this.extraerNombre(u);
+                if (nombreSrv) this.nombre = nombreSrv;
+                this.matricula = String(u.strmatricula || u.matricula || this.matricula).trim();
+                this.rol = String(u.strrol || u.rol || this.rol).trim();
+                this.esEstudiante = !(this.rol === 'Administrativo' || this.correo.toUpperCase().startsWith('A'));
 
-              const actualizado = {
-                ...u,
-                nombre: this.nombre,
-                correo: this.correo,
-                matricula: this.matricula,
-                rol: this.rol
-              };
-              localStorage.setItem('nexora_active_user', JSON.stringify(actualizado));
-              localStorage.setItem('usuarioNexora', JSON.stringify(actualizado));
-            }
-            this.cdr.detectChanges();
-            this.cargarHistorial();
-          });
-        },
-        error: () => this.cargarHistorial()
-      });
+                const actualizado = {
+                  ...u,
+                  nombre: this.nombre,
+                  correo: this.correo,
+                  matricula: this.matricula,
+                  rol: this.rol
+                };
+                localStorage.setItem('nexora_active_user', JSON.stringify(actualizado));
+                localStorage.setItem('usuarioNexora', JSON.stringify(actualizado));
+              }
+              this.cdr.detectChanges();
+              this.cargarHistorial();
+            });
+          },
+          error: () => this.cargarHistorial()
+        });
     } else {
       this.cargarHistorial();
     }
@@ -160,108 +168,80 @@ export class UsuariosPage implements OnInit {
   }
 
   cargarHistorial() {
-    if (!this.matricula && !this.correo) {
+    if (!this.matricula && !this.correo && !this.nombre) {
       this.historialReservas = [];
       return;
     }
 
     this.cargando = true;
-    this.http.get<any>(`${this.apiUrl}/getReservas`).subscribe({
+    this.http.get<any>(`${this.apiUrl}/getReservas?t=${Date.now()}`).subscribe({
       next: (resp) => {
         this.zone.run(() => {
           const crudas: any[] = Array.isArray(resp) ? resp : (resp?.Respuesta || []);
 
-          const matLower = this.matricula.toLowerCase();
-          const mailLower = this.correo.toLowerCase();
-          const numCorreo = mailLower.split('@')[0].replace(/^[ae]/i, '');
+          const matLower = this.matricula.toLowerCase().trim();
+          const mailLower = this.correo.toLowerCase().trim();
+          const nombreLower = this.nombre.toLowerCase().trim();
+          const prefijoCorreo = mailLower.includes('@') ? mailLower.split('@')[0] : mailLower;
+          const soloDigitosCorreo = prefijoCorreo.replace(/^[ae]/i, '');
 
-          const normalizadas = crudas.map((r: any, idx: number) => {
-            const id = typeof r._id === 'object' && r._id?.$oid ? r._id.$oid : String(r._id || r.reserva_id || '');
-            const fecha = this.normalizarFechaISO(r.fecha || r.strfecha || r.fechaReserva);
-            return {
-              _id: id,
-              reserva_id: id,
-              codigoRecurso: String(r.codigoRecurso || r.codigo || r.strcodigo || 'S/C').trim(),
-              nombreRecurso: String(
-                r.nombreRecurso ||
-                r.strnombreRecurso ||
-                r.recurso ||
-                r.nombre ||
-                'Recurso'
-              ).trim(),
-              ubicacion: String(r.ubicacion || r.strubicacion || 'Campus UTC').trim(),
-              fecha,
-              horaInicio: String(r.horaInicio || r.strhoraInicio || '00:00').trim(),
-              horaFin: String(r.horaFin || r.strhoraFin || '').trim(),
-              fechaMovimiento: String(r.fechaAprobacion || r.fechaCreacion || r.updatedAt || fecha).trim(),
-              estado: String(r.estado || r.strestado || 'Pendiente').trim(),
-              solicitante: String(
-                r.solicitante ||
-                r.matricula ||
-                r.strmatricula ||
-                r.correo ||
-                r.strcorreoUsuario ||
-                ''
-              ).trim(),
-              correoReserva: String(
-                r.correo ||
-                r.strcorreoUsuario ||
-                r.usuario_email ||
-                ''
-              ).trim(),
-              aprobadoPor: String(
-                r.aprobadoPor ||
-                r.straprobadoPor ||
-                r.adminCorreo ||
-                r.usuarioAdmin ||
-                ''
-              ).trim(),
-              ordenOriginal: idx
-            };
-          });
-
-          // 1. Solo reservas aprobadas o atendidas
-          const soloAprobadas = normalizadas.filter((r) => {
-            const est = r.estado.toLowerCase();
+          // Filtrar todas las reservas con estado Aprobada o Atendida
+          const aprobadas = crudas.filter((r: any) => {
+            const est = String(r.estado || r.strestado || '').trim().toLowerCase();
             return est === 'aprobada' || est === 'atendida';
           });
 
           let filtradas: any[] = [];
 
           if (this.esEstudiante) {
-            // Estudiante: coincidencia exacta con su matrícula o correo
-            filtradas = soloAprobadas.filter((r) => {
-              const sol = r.solicitante.toLowerCase();
-              const mail = r.correoReserva.toLowerCase();
+            filtradas = aprobadas.filter((r: any) => {
+              const sol = String(r.solicitante || '').toLowerCase();
+              const mat = String(r.matricula || r.strmatricula || '').toLowerCase();
+              const mail = String(r.correo || r.strcorreoUsuario || '').toLowerCase();
+
               return (
-                (matLower !== '' && (sol === matLower || mail === matLower)) ||
-                (mailLower !== '' && (mail === mailLower || sol === mailLower)) ||
-                (numCorreo !== '' && sol === numCorreo)
+                (matLower !== '' && (mat === matLower || sol.includes(matLower))) ||
+                (mailLower !== '' && (mail === mailLower || sol.includes(mailLower))) ||
+                (prefijoCorreo.length >= 4 && (sol.includes(prefijoCorreo) || mail.includes(prefijoCorreo))) ||
+                (soloDigitosCorreo.length >= 4 && (sol.includes(soloDigitosCorreo) || mat.includes(soloDigitosCorreo))) ||
+                (nombreLower.length >= 4 && sol.includes(nombreLower))
               );
             });
           } else {
-            // Administrativo: solo las que aprobó este usuario exacto
-            filtradas = soloAprobadas.filter((r) => {
-              const apr = r.aprobadoPor.toLowerCase();
+            filtradas = aprobadas.filter((r: any) => {
+              const apr = String(r.aprobadoPor || r.straprobadoPor || '').toLowerCase().trim();
               if (!apr) return false;
-              const numApr = apr.split('@')[0].replace(/^[ae]/i, '');
+              const prefijoApr = apr.includes('@') ? apr.split('@')[0] : apr;
+              const digitosApr = prefijoApr.replace(/^[ae]/i, '');
+
               return (
-                (mailLower !== '' && apr === mailLower) ||
-                (matLower !== '' && apr === matLower) ||
-                (numCorreo !== '' && numApr === numCorreo)
+                (mailLower !== '' && (apr === mailLower || apr.includes(mailLower))) ||
+                (matLower !== '' && (apr === matLower || apr.includes(matLower))) ||
+                (nombreLower.length >= 4 && apr.includes(nombreLower)) ||
+                (prefijoCorreo.length >= 4 && prefijoApr === prefijoCorreo) ||
+                (soloDigitosCorreo.length >= 4 && digitosApr === soloDigitosCorreo)
               );
             });
           }
 
-          // Pila LIFO: el movimiento más reciente va en el tope (índice 0)
-          filtradas.sort((a, b) => {
-            const keyA = `${a.fecha} ${a.horaInicio}`;
-            const keyB = `${b.fecha} ${b.horaInicio}`;
-            const cmp = keyB.localeCompare(keyA);
-            return cmp !== 0 ? cmp : b.ordenOriginal - a.ordenOriginal;
+          this.historialReservas = filtradas.map((r: any) => {
+            const id = typeof r._id === 'object' && r._id?.$oid ? r._id.$oid : String(r._id || '');
+            const fecha = this.normalizarFechaISO(r.fecha);
+            return {
+              _id: id,
+              reserva_id: id,
+              codigoRecurso: String(r.codigoRecurso || 'S/C').trim(),
+              nombreRecurso: String(r.nombreRecurso || 'Recurso').trim(),
+              ubicacion: String(r.ubicacion || 'Campus UTC').trim(),
+              fecha,
+              horaInicio: String(r.horaInicio || '00:00').trim(),
+              horaFin: String(r.horaFin || '').trim(),
+              fechaMovimiento: String(r.fechaAprobacion || r.fechaCreacion || fecha).trim(),
+              estado: String(r.estado || 'Aprobada').trim(),
+              solicitante: String(r.solicitante || r.matricula || '').trim()
+            };
           });
 
-          this.historialReservas = filtradas;
           this.cargando = false;
           this.cdr.detectChanges();
         });
@@ -273,6 +253,15 @@ export class UsuariosPage implements OnInit {
           this.cargando = false;
           this.cdr.detectChanges();
         });
+      }
+    });
+  }
+
+  irAEscanear(res: any) {
+    this.router.navigate(['/escanear'], {
+      queryParams: {
+        reservaId: res.reserva_id || res._id || '',
+        codigo: res.codigoRecurso || ''
       }
     });
   }

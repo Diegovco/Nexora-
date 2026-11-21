@@ -1,88 +1,115 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <h1 class="app-title">Mis Reservas</h1>
+    <div class="logo-container" slot="start">
+      <div class="logo">
+        <img src="assets/img/nexora-logo.png" alt="Nexora Logo" />
+      </div>
+      <h1 class="app-title">Mis reservas</h1>
+    </div>
+
+    <ion-buttons slot="end">
+      <ion-button class="refresh-btn" (click)="cargarReservasUsuario()" title="Actualizar">
+        <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="login-fondo">
-  <div class="container mt-3">
-    <!-- Buscador por Matrícula -->
-    <div class="row justify-content-center mb-3">
-      <div class="item-card col-11 col-md-10 p-3">
-        <label class="form-label">Consulta por Matrícula</label>
-        <div class="d-flex gap-2">
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Ej. 2531089"
-            [(ngModel)]="matricula"
-            (keyup.enter)="buscarPorMatricula()" />
-          <button type="button" class="btn-reservar d-flex align-items-center gap-1" (click)="buscarPorMatricula()">
-            <ion-icon name="search-outline"></ion-icon>
-            Buscar
-          </button>
-        </div>
+  <div class="main-wrapper">
+
+    <!-- 3 Tarjetas métricas semanales (Semana pasada | Esta semana | Siguiente semana) -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-num">{{ reservasSemanaPasada }}</span>
+        <span class="stat-label">Semana pasada</span>
+      </div>
+
+      <div class="stat-card destacada">
+        <span class="stat-num">{{ reservasEstaSemana }}</span>
+        <span class="stat-label">Esta semana</span>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-num">{{ reservasSiguienteSemana }}</span>
+        <span class="stat-label">Siguiente semana</span>
       </div>
     </div>
 
-    <!-- Estados y Resultados -->
+    <!-- Encabezado de sección -->
+    <div class="section-header">
+      <span class="section-sub">TODAS MIS RESERVAS</span>
+      <span class="badge-total">{{ reservas.length }} total</span>
+    </div>
+
+    <!-- Listado de reservas -->
     @if (cargando) {
-      <div class="text-center text-muted mt-4">
-        <p>Buscando reservas en la base de datos...</p>
+      <div class="empty-state">
+        <p>Consultando reservas en la base de datos...</p>
       </div>
-    } @else if (busquedaRealizada) {
-      @for (r of reservas; track r._id || r.turno) {
-        <div class="row justify-content-center mb-2">
-          <div class="item-card col-11 col-md-10">
-            <div class="d-flex align-items-center justify-content-between">
-              <div class="d-flex align-items-center">
-                <div class="icon-box me-3">#{{ r.turno }}</div>
-                <div class="text-start">
+    } @else {
+      <div class="lista-reservas">
+        @for (r of reservas; track r._id || r.turno || $index) {
+          <div class="item-card" [class.destacada-card]="r.estado.toLowerCase() === 'pendiente'">
+            <div class="card-top">
+              <div class="item-info">
+                <div class="icon-box">#{{ r.turno || ($index + 1) }}</div>
+                <div class="item-text">
                   <h4 class="item-title">{{ r.nombreRecurso }} ({{ r.codigoRecurso }})</h4>
-                  <p class="item-subtitle">Matrícula: {{ r.solicitante }} · {{ r.ubicacion }}</p>
+                  <p class="item-subtitle">{{ r.ubicacion }} · Matrícula: {{ r.solicitante }}</p>
                   <p class="item-subtitle">{{ r.fecha }} · {{ r.horaInicio }} – {{ r.horaFin }}</p>
                   @if (r.motivo) {
                     <p class="item-subtitle">Motivo: {{ r.motivo }}</p>
                   }
                 </div>
               </div>
-              <span class="badge-estado">{{ r.estado }}</span>
+
+              <span
+                class="badge-estado"
+                [class.aprobada]="r.estado.toLowerCase() === 'aprobada' || r.estado.toLowerCase() === 'atendida'"
+                [class.pendiente]="r.estado.toLowerCase() === 'pendiente'"
+                [class.rechazada]="r.estado.toLowerCase() === 'rechazada' || r.estado.toLowerCase() === 'cancelada'"
+              >
+                {{ r.estado }}
+              </span>
             </div>
 
-            @if (r.estado === 'Pendiente') {
-              <div class="d-flex gap-2 mt-2 justify-content-end">
-                <button class="btn-outline-secondary" (click)="cambiarEstado(r, 'Rechazada')">Cancelar</button>
-                <button class="btn-reservar" (click)="cambiarEstado(r, 'Aprobada')">Aprobar turno</button>
+            @if (r.estado.toLowerCase() === 'pendiente') {
+              <div class="card-actions">
+                <button type="button" class="btn-cancelar-res" (click)="cambiarEstado(r, 'Rechazada')">
+                  Cancelar reserva
+                </button>
               </div>
             }
           </div>
-        </div>
-      } @empty {
-        <div class="text-center text-muted mt-4">
-          <p>No se encontraron reservas registradas para la matrícula <strong>{{ matricula }}</strong>.</p>
-        </div>
-      }
-    } @else {
-      <div class="text-center text-muted mt-4">
-        <p>Ingresa tu matrícula arriba para ver tus reservas y turnos en cola.</p>
+        } @empty {
+          <div class="empty-state">
+            <p>Aún no tienes reservas registradas en tu cuenta.</p>
+          </div>
+        }
       </div>
     }
+
   </div>
 </ion-content>
 
-<ion-footer class="ion-no-border">
+<ion-footer class="ion-no-border footer-wrapper">
   <nav class="nx-barra">
-    <a routerLink="/inicio" routerLinkActive="activa">
-      <ion-icon name="home-outline"></ion-icon>Inicio
+    <a routerLink="/inicio" routerLinkActive="activa" [routerLinkActiveOptions]="{ exact: true }">
+      <ion-icon name="home-outline"></ion-icon>
+      <span>Inicio</span>
     </a>
     <a routerLink="/catalogo" routerLinkActive="activa">
-      <ion-icon name="grid-outline"></ion-icon>Catálogo
+      <ion-icon name="grid-outline"></ion-icon>
+      <span>Catálogo</span>
     </a>
     <a routerLink="/mis-reservas" routerLinkActive="activa">
-      <ion-icon name="receipt-outline"></ion-icon>Reservas
+      <ion-icon name="receipt-outline"></ion-icon>
+      <span>Mis Reservas</span>
     </a>
-    <a routerLink="/login" routerLinkActive="activa">
-      <ion-icon name="person-outline"></ion-icon>Salir
+    <a routerLink="/reportes" routerLinkActive="activa">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <span>Reportar</span>
     </a>
   </nav>
 </ion-footer>

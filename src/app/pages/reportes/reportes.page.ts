@@ -9,10 +9,12 @@ import {
   homeOutline,
   gridOutline,
   scanCircleOutline,
+  scanOutline,
   alertCircleOutline,
   addCircleOutline,
   documentTextOutline,
   folderOpenOutline,
+  checkmarkDoneOutline,
   sendOutline,
   refreshOutline
 } from 'ionicons/icons';
@@ -63,10 +65,12 @@ export class ReportesPage implements OnInit {
       homeOutline,
       gridOutline,
       scanCircleOutline,
+      scanOutline,
       alertCircleOutline,
       addCircleOutline,
       documentTextOutline,
       folderOpenOutline,
+      checkmarkDoneOutline,
       sendOutline,
       refreshOutline
     });
@@ -154,7 +158,7 @@ export class ReportesPage implements OnInit {
 
   cargarReportes() {
     this.cargando = true;
-    this.http.get<any>(`${this.apiUrl}/getReportes`).subscribe({
+    this.http.get<any>(`${this.apiUrl}/getReportes?t=${Date.now()}`).subscribe({
       next: (resp) => {
         this.zone.run(() => {
           const crudas: any[] = Array.isArray(resp) ? resp : (resp?.Respuesta || []);

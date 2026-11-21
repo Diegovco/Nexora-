@@ -2,15 +2,29 @@ import { ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { RouterLink, RouterLinkActive } from '@angular/router';
-import { IonHeader, IonToolbar, IonButtons, IonButton, IonContent, IonFooter, IonIcon } from '@ionic/angular';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import {
+  IonPopover,
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonContent,
+  IonFooter,
+  IonIcon
+} from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   notificationsOutline,
+  personOutline,
+  logOutOutline,
+  ellipsisVertical,
   searchOutline,
   homeOutline,
   gridOutline,
-  scanCircleOutline,
+  receiptOutline,
   alertCircleOutline
 } from 'ionicons/icons';
 import { RecursosService, Recurso } from '../../services/recursos.service';
@@ -35,7 +49,8 @@ export interface RecursoCatalogo extends Recurso {
     IonButton,
     IonContent,
     IonFooter,
-    IonIcon
+    IonIcon,
+    IonPopover
   ]
 })
 export class CatalogoPage implements OnInit {
@@ -49,15 +64,19 @@ export class CatalogoPage implements OnInit {
   constructor(
     private recursosService: RecursosService,
     private http: HttpClient,
+    private router: Router,
     private cdr: ChangeDetectorRef,
     private zone: NgZone
   ) {
     addIcons({
       notificationsOutline,
+      personOutline,
+      logOutOutline,
+      ellipsisVertical,
       searchOutline,
       homeOutline,
       gridOutline,
-      scanCircleOutline,
+      receiptOutline,
       alertCircleOutline
     });
   }
@@ -89,43 +108,65 @@ export class CatalogoPage implements OnInit {
   }
 
   cargarDesdeBD() {
-    this.http.get<any>(`${this.apiUrl}/getRecursos`).subscribe({
-      next: (resp) => {
-        this.zone.run(() => {
-          const lista = Array.isArray(resp) ? resp : (resp?.Respuesta || []);
+    forkJoin({
+      recursosResp: this.http.get<any>(`${this.apiUrl}/getRecursos?t=${Date.now()}`).pipe(
+        catchError(() => of({ Respuesta: [] }))
+      ),
+      reservasResp: this.http.get<any>(`${this.apiUrl}/getReservas?t=${Date.now()}`).pipe(
+        catchError(() => of({ Respuesta: [] }))
+      )
+    }).subscribe(({ recursosResp, reservasResp }) => {
+      this.zone.run(() => {
+        const lista = Array.isArray(recursosResp) ? recursosResp : (recursosResp?.Respuesta || []);
+        const reservasCrudas: any[] = Array.isArray(reservasResp) ? reservasResp : (reservasResp?.Respuesta || []);
 
-          this.todosLosRecursos = lista.map((item: any) => {
-            const codigo = String(item.codigo || item.strcodigo || '').trim();
-            const rawCantidad = item.cantidad ?? item.intcantidad;
-            const cantidad = rawCantidad !== undefined && rawCantidad !== null ? Number(rawCantidad) : 1;
-
-            const estadoRaw = String(item.estado || item.strestado || '').trim();
-            const estado = estadoRaw || (cantidad > 0 ? 'Disponible' : 'No disponible');
-
-            return {
-              _id: this.extraerId(item._id),
-              codigo,
-              nombre: String(item.nombre || item.strnombre || 'Recurso sin nombre').trim(),
-              categoria: this.normalizarCategoria(String(item.categoria || item.strcategoria || ''), codigo),
-              ubicacion: String(item.ubicacion || item.strubicacion || 'Campus UTC').trim(),
-              estado,
-              cantidad,
-              descripcion: String(item.descripcion || item.strdescripcion || '').trim()
-            };
-          });
-
-          this.filtrar();
-          this.cdr.detectChanges();
+        const reservasActivas = reservasCrudas.filter((r: any) => {
+          const est = String(r.estado || r.strestado || '').trim().toLowerCase();
+          return est === 'pendiente' || est === 'aprobada';
         });
-      },
-      error: (err) => {
-        console.error('Error al cargar catálogo desde MongoDB:', err);
-        this.zone.run(() => {
-          this.todosLosRecursos = [];
-          this.recursos = [];
-          this.cdr.detectChanges();
+
+        this.todosLosRecursos = lista.map((item: any) => {
+          const id = this.extraerId(item._id);
+          const codigo = String(item.codigo || item.strcodigo || '').trim();
+          const rawCantidad = item.cantidad ?? item.intcantidad;
+          const cantidadTotal = rawCantidad !== undefined && rawCantidad !== null ? Number(rawCantidad) : 1;
+
+          const vecesReservado = reservasActivas.filter((r: any) => {
+            const codRes = String(r.codigoRecurso || r.codigo || r.strcodigo || '').trim().toLowerCase();
+            const idRes = this.extraerId(r.recursoId || r.recurso_id);
+            return (
+              (codigo !== '' && codRes === codigo.toLowerCase()) ||
+              (id !== '' && idRes === id)
+            );
+          }).length;
+
+          const disponiblesReales = Math.max(0, cantidadTotal - vecesReservado);
+          const estadoRaw = String(item.estado || item.strestado || '').trim().toLowerCase();
+
+          let estado = 'Disponible';
+          if (estadoRaw === 'mantenimiento') {
+            estado = 'Mantenimiento';
+          } else if (disponiblesReales <= 0) {
+            estado = 'Ocupado';
+          } else {
+            estado = 'Disponible';
+          }
+
+          return {
+            _id: id,
+            codigo,
+            nombre: String(item.nombre || item.strnombre || 'Recurso sin nombre').trim(),
+            categoria: this.normalizarCategoria(String(item.categoria || item.strcategoria || ''), codigo),
+            ubicacion: String(item.ubicacion || item.strubicacion || 'Campus UTC').trim(),
+            estado,
+            cantidad: disponiblesReales,
+            descripcion: String(item.descripcion || item.strdescripcion || '').trim()
+          };
         });
-      }
+
+        this.filtrar();
+        this.cdr.detectChanges();
+      });
     });
   }
 
@@ -153,5 +194,20 @@ export class CatalogoPage implements OnInit {
 
   claseEstado(estado: string): string {
     return this.recursosService.claseEstado(estado);
+  }
+
+  reservar(r: RecursoCatalogo) {
+    this.router.navigate(['/nueva-reserva'], {
+      queryParams: {
+        id: r._id || '',
+        codigo: r.codigo
+      }
+    });
+  }
+
+  cerrarSesion() {
+    localStorage.removeItem('nexora_active_user');
+    localStorage.removeItem('usuarioNexora');
+    this.router.navigateByUrl('/login');
   }
 }
