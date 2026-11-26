@@ -74,3 +74,8 @@ Thumbs.db
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Configuración privada de la API Flask (clave de administrador, conexión a MongoDB)
+API/.env
+*.pyc
+api-python/.env

@@ -48,22 +48,25 @@ export class RecursosService {
   }
 
   // Crea el siguiente código según la categoría: LAB-006, LIB-1188, AV-0042...
-  generarCodigo(categoria: string): string {
+  // Si se le pasa la lista de recursos de la base de datos, usa esa lista.
+  generarCodigo(categoria: string, lista: Recurso[] = this.recursos): string {
     let prefijo = 'AV';
     if (categoria === 'Laboratorio') { prefijo = 'LAB'; }
     if (categoria === 'Libro') { prefijo = 'LIB'; }
 
     let mayor = 0;
-    for (let i = 0; i < this.recursos.length; i++) {
-      const partes = this.recursos[i].codigo.split('-');
+    let digitos = 3; // cuántos dígitos usan los códigos que ya existen (AV-0041 usa 4)
+    for (let i = 0; i < lista.length; i++) {
+      const partes = String(lista[i].codigo || '').split('-');
       if (partes[0] === prefijo) {
         const numero = Number(partes[1]);
-        if (numero > mayor) { mayor = numero; }
+        if (!isNaN(numero) && numero > mayor) { mayor = numero; }
+        if (partes[1] && partes[1].length > digitos) { digitos = partes[1].length; }
       }
     }
 
     let siguiente = String(mayor + 1);
-    while (siguiente.length < 3) {
+    while (siguiente.length < digitos) {
       siguiente = '0' + siguiente;
     }
     return prefijo + '-' + siguiente;

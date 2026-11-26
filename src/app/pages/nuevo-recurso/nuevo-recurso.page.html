@@ -44,20 +44,59 @@
                 placeholder="Ej. Placa, cable USB y protoboard" [(ngModel)]="descripcion"></textarea>
     </div>
 
-    <div class="nx-tarjeta qr">
-      <ion-icon name="qr-code-outline"></ion-icon>
-      <div>
-        <strong>Código {{ codigoVista }}</strong>
-        <p class="nx-gris">Se genera al guardar. Imprime la etiqueta y pégala en el recurso.</p>
+    <!-- Foto del recurso -->
+    <div class="nx-campo">
+      <span class="nx-label">Foto del recurso</span>
+      @if (foto) {
+        <div class="foto-vista">
+          <img [src]="foto" alt="Foto del recurso" />
+          <button type="button" class="foto-quitar" (click)="quitarFoto()" aria-label="Quitar foto">
+            <ion-icon name="close-outline"></ion-icon>
+          </button>
+        </div>
+      }
+      <div class="foto-botones">
+        <button type="button" class="nx-boton-sec" (click)="tomarFoto()">
+          <ion-icon name="camera-outline"></ion-icon> {{ foto ? 'Tomar otra' : 'Tomar foto' }}
+        </button>
+        <button type="button" class="nx-boton-sec" (click)="elegirFoto()">
+          <ion-icon name="images-outline"></ion-icon> Galería
+        </button>
       </div>
     </div>
+
+    <!-- Etiqueta QR -->
+    @if (etiquetaQr) {
+      <div class="nx-tarjeta etiqueta">
+        @if (guardado) {
+          <p class="etiqueta-aviso">✔ Recurso guardado. Imprime esta etiqueta y pégala en el recurso.</p>
+        }
+        <img [src]="etiquetaQr" [alt]="'Etiqueta QR ' + codigoVista" />
+        <button type="button" class="nx-boton" (click)="descargarQr()">
+          <ion-icon name="download-outline"></ion-icon> Descargar / compartir QR
+        </button>
+      </div>
+    } @else {
+      <div class="nx-tarjeta qr">
+        <ion-icon name="qr-code-outline"></ion-icon>
+        <div>
+          <strong>Código {{ codigoVista }}</strong>
+          <p class="nx-gris">Al guardar se genera el QR. Imprime la etiqueta y pégala en el recurso.</p>
+        </div>
+      </div>
+    }
 
   </div>
 </ion-content>
 
 <ion-footer class="ion-no-border">
   <div class="botones">
-    <button class="nx-boton-sec" (click)="cancelar()">Cancelar</button>
-    <button class="nx-boton" (click)="guardar()">Guardar</button>
+    @if (guardado) {
+      <button class="nx-boton-sec" (click)="nuevoOtro()">Registrar otro</button>
+      <button class="nx-boton" (click)="cancelar()">Listo</button>
+    } @else {
+      <button class="nx-boton-sec" (click)="cancelar()">Cancelar</button>
+      <button class="nx-boton" [disabled]="guardando" (click)="guardar()">{{ guardando ? 'Guardando...' : 'Guardar' }}</button>
+    }
   </div>
 </ion-footer>

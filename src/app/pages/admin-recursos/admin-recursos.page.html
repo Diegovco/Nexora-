@@ -27,14 +27,24 @@
     @for (r of recursos; track r.codigo) {
       <div class="nx-tarjeta recurso">
         <div class="nx-encabezado">
-          <div>
-            <strong>{{ r.nombre }}</strong>
-            <p class="nx-gris">{{ r.codigo }} · {{ r.ubicacion }}</p>
+          <div class="recurso-info">
+            @if (r.foto) {
+              <img class="recurso-foto" [src]="r.foto" [alt]="r.nombre" />
+            } @else {
+              <div class="recurso-foto sin-foto"><ion-icon name="image-outline"></ion-icon></div>
+            }
+            <div>
+              <strong>{{ r.nombre }}</strong>
+              <p class="nx-gris">{{ r.codigo }} · {{ r.ubicacion }}</p>
+            </div>
           </div>
           <span class="nx-estado {{ claseEstado(r.estado) }}">{{ r.estado }}</span>
         </div>
         <div class="acciones">
           <button class="nx-boton-sec" (click)="editar(r)">Editar</button>
+          <button class="nx-boton-sec" (click)="descargarQr(r)">
+            <ion-icon name="qr-code-outline"></ion-icon> QR
+          </button>
           <button class="nx-boton-sec eliminar" [disabled]="r.estado === 'Prestado'" (click)="eliminar(r)">Eliminar</button>
         </div>
         @if (r.estado === 'Prestado') {
@@ -50,9 +60,25 @@
 
 <ion-footer class="ion-no-border">
   <nav class="nx-barra">
-    <a routerLink="/admin-recursos" class="activa"><ion-icon name="cube-outline"></ion-icon>Recursos</a>
-    <a routerLink="/usuarios"><ion-icon name="people-outline"></ion-icon>Usuarios</a>
-    <a routerLink="/reportes"><ion-icon name="bar-chart-outline"></ion-icon>Reportes</a>
-    <a routerLink="/login"><ion-icon name="log-out-outline"></ion-icon>Salir</a>
+  <a routerLink="/inicio" routerLinkActive="activa" [routerLinkActiveOptions]="{ exact: true }">
+        <ion-icon name="home-outline"></ion-icon>
+        <span>Inicio</span>
+      </a>
+      <a routerLink="/admin-recursos" routerLinkActive="activa">
+        <ion-icon name="cube-outline"></ion-icon>
+        <span>Recursos</span>
+      </a>
+      <a routerLink="/escanear" routerLinkActive="activa">
+        <ion-icon name="scan-outline"></ion-icon>
+        <span>Escanear</span>
+      </a>
+      <a routerLink="/gestion-reservas" routerLinkActive="activa">
+        <ion-icon name="document-text-outline"></ion-icon>
+        <span>Gestión</span>
+      </a>
+      <a routerLink="/registros" routerLinkActive="activa">
+        <ion-icon name="checkmark-done-outline"></ion-icon>
+        <span>Aprobadas</span>
+      </a>
   </nav>
 </ion-footer>

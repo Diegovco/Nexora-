@@ -1,0 +1,4 @@
+# Solo para ejecutar pruebas/prueba_flujo.py sin MongoDB real.
+-r requirements.txt
+mongomock>=4.3,<5.0
+httpx>=0.28,<1.0

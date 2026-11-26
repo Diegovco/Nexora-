@@ -1,13 +1,133 @@
-<ion-header [translucent]="true">
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>nueva-reserva</ion-title>
+    <ion-buttons slot="start">
+      <ion-button class="back-btn" routerLink="/inicio" title="Volver">
+        <ion-icon name="chevron-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">nueva-reserva</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="login-fondo">
+  <div class="main-wrapper">
+    <!-- Cabecera del recurso seleccionado -->
+    <div class="recurso-hero">
+      <span class="badge-estado" [class.ocupado]="recurso.estado !== 'Disponible'">
+        {{ recurso.estado || 'Disponible' }}
+      </span>
+      <h1 class="recurso-titulo">{{ recurso.nombre || 'Cargando recurso...' }}</h1>
+      <p class="recurso-subtitulo">
+        {{ recurso.ubicacion || 'Campus UTC' }}
+        @if (recurso.codigo) { · {{ recurso.codigo }} }
+        @if (recurso.categoria) { · {{ recurso.categoria }} }
+      </p>
+    </div>
+
+    <!-- Solicitante cargado automáticamente -->
+    <div class="solicitante-pill">
+      <span class="solicitante-label">Solicitante:</span>
+      @if (solicitanteBloqueado) {
+        <strong class="solicitante-valor">{{ solicitante }}</strong>
+      } @else {
+        <input
+          type="text"
+          class="solicitante-inline-input"
+          placeholder="Escribe tu nombre o matrícula"
+          [(ngModel)]="solicitante"
+        />
+      }
+    </div>
+
+    <!-- Selector de día escolar (Lun - Vie) -->
+    <div class="seccion-bloque">
+      <label class="seccion-label">Elige el día</label>
+      <div class="dias-grid">
+        @for (d of diasDisponibles; track d.fechaISO) {
+          <button
+            type="button"
+            class="dia-card"
+            [class.activo]="fecha === d.fechaISO"
+            (click)="seleccionarDia(d)"
+          >
+            <span class="dia-nombre">{{ d.diaCorto }}</span>
+            <span class="dia-numero">{{ d.numeroDia }}</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Horario escolar (07:00 - 15:00) -->
+    <div class="seccion-bloque">
+      <div class="horario-header">
+        <label class="seccion-label m-0">Horario</label>
+        <span class="fecha-larga">{{ fechaLargaSeleccionada }}</span>
+      </div>
+
+      <div class="horas-slots-grid">
+        @for (slot of slotsHorario; track slot.hora) {
+          <button
+            type="button"
+            class="slot-btn"
+            [class.seleccionado]="slot.seleccionado"
+            [class.ocupado]="slot.ocupado"
+            [disabled]="slot.ocupado"
+            (click)="toggleSlot(slot)"
+          >
+            {{ slot.hora }}
+          </button>
+        }
+      </div>
+
+      <!-- Leyenda -->
+      <div class="leyenda-row">
+        <div class="leyenda-item">
+          <span class="cuadro seleccionado"></span>
+          <span>Seleccionado</span>
+        </div>
+        <div class="leyenda-item">
+          <span class="cuadro libre"></span>
+          <span>Libre</span>
+        </div>
+        <div class="leyenda-item">
+          <span class="cuadro ocupado"></span>
+          <span>Ocupado</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Motivo de la reserva -->
+    <div class="seccion-bloque">
+      <label class="seccion-label" for="motivoInput">Motivo de la reserva</label>
+      <input
+        id="motivoInput"
+        type="text"
+        class="form-control"
+        placeholder="Ej. Práctica de Estructura de Datos"
+        [(ngModel)]="motivo"
+      />
+      <p class="nota-reglas">
+        Los recursos se reservan dentro del horario escolar (07:00 a 16:00). Si no llegas en los primeros 15 minutos, la reserva se cancela.
+      </p>
+    </div>
+  </div>
 </ion-content>
+
+<ion-footer class="ion-no-border footer-wrapper">
+  <div class="seleccion-bar">
+    <div class="seleccion-info">
+      <span class="seleccion-label">Tu selección</span>
+      <strong class="seleccion-rango">
+        {{ horaInicio && horaFin ? (horaInicio + ' – ' + horaFin) : 'Elige un horario' }}
+      </strong>
+    </div>
+
+    <button
+      type="button"
+      class="btn-solicitar"
+      [disabled]="enviando || !horaInicio || !horaFin"
+      (click)="confirmarReserva()"
+    >
+      {{ enviando ? 'Enviando...' : 'Solicitar reserva' }}
+    </button>
+  </div>
+</ion-footer>

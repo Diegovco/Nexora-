@@ -4,6 +4,9 @@
 
 export const environment = {
   production: false,
+  // Dirección de la API Flask (carpeta API/). Para probar en un celular,
+  // cambia localhost por la IP de tu computadora, ej. 'http://192.168.1.50:5000'.
+  apiUrl: 'http://localhost:5000',
 };
 
 /*

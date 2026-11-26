@@ -1,0 +1,24 @@
+/* Los estilos principales vienen de ../login/login.page.scss */
+
+.aviso-correo {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+
+  &.valido {
+    color: #4ade80;
+  }
+
+  &.invalido {
+    color: #f87171;
+  }
+
+  &.ayuda {
+    color: #8b9bb4;
+  }
+}
+
+.forgot-password a {
+  cursor: pointer;
+}

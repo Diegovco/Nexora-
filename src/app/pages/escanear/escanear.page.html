@@ -1,9 +1,11 @@
-<ion-content>
+<ion-content class="login-fondo">
   <div class="nx-pagina">
 
     <div class="nx-encabezado">
       <div class="nx-titulo">
-        <img src="assets/img/nexora-logo.png" alt="Nexora">
+        <div class="logo">
+          <img src="assets/img/nexora-logo.png" alt="Nexora" />
+        </div>
         <h1>Escanear recurso</h1>
       </div>
       <span class="nx-insignia">Encargado</span>
@@ -11,23 +13,43 @@
 
     <!-- Préstamo / Devolución -->
     <div class="modos">
-      <button [class.activo]="modo === 'prestamo'" (click)="cambiarModo('prestamo')">Préstamo</button>
-      <button [class.activo]="modo === 'devolucion'" (click)="cambiarModo('devolucion')">Devolución</button>
+      <button type="button" [class.activo]="modo === 'prestamo'" (click)="cambiarModo('prestamo')">
+        Préstamo
+      </button>
+      <button type="button" [class.activo]="modo === 'devolucion'" (click)="cambiarModo('devolucion')">
+        Devolución
+      </button>
     </div>
 
-    <!-- Zona de cámara -->
-    <div class="camara">
+    <!-- Zona de cámara con esquinas tipo escáner QR -->
+    <div class="camara" (click)="escanearConCamara()" role="button" aria-label="Escanear QR con la cámara">
       <div class="marco">
+        <span class="esquina tl"></span>
+        <span class="esquina tr"></span>
+        <span class="esquina bl"></span>
+        <span class="esquina br"></span>
         <ion-icon name="qr-code-outline"></ion-icon>
       </div>
-      <p>Apunta la cámara al código del recurso</p>
+      <p>
+        {{ recurso ? 'Código ' + recurso.codigo + ' detectado' : 'Toca aquí para escanear el QR del recurso' }}
+      </p>
     </div>
+
+    <button type="button" class="nx-boton boton-camara" [disabled]="escaneando" (click)="escanearConCamara()">
+      <ion-icon name="camera-outline"></ion-icon>
+      {{ escaneando ? 'Abriendo cámara...' : 'Escanear con la cámara' }}
+    </button>
 
     <!-- Código escrito a mano -->
     <div class="buscar">
-      <input class="nx-input" type="text" placeholder="O escribe el código (ej. AV-0041)"
-             aria-label="Código del recurso" [(ngModel)]="codigo">
-      <button class="nx-boton-sec" (click)="buscar()">Buscar</button>
+      <input
+        class="nx-input"
+        type="text"
+        placeholder="O escribe el código (ej. AV-0041)"
+        aria-label="Código del recurso"
+        [(ngModel)]="codigo"
+      />
+      <button type="button" class="nx-boton-sec" (click)="buscar()">Buscar</button>
     </div>
 
     @if (mensaje !== '') {
@@ -37,12 +59,26 @@
     <!-- Resultado -->
     @if (recurso) {
       <div class="nx-tarjeta resultado">
-        <div class="nx-encabezado">
-          <div>
+        @if (recurso.foto) {
+          <img class="resultado-foto" [src]="recurso.foto" [alt]="recurso.nombre" />
+        }
+        <div class="resultado-header">
+          <div class="resultado-titulo">
             <strong>{{ recurso.nombre }}</strong>
             <p class="nx-gris">{{ recurso.ubicacion }} · {{ recurso.codigo }}</p>
           </div>
-          <span class="nx-estado {{ claseEstado(recurso.estado) }}">{{ recurso.estado }}</span>
+          <span class="nx-estado" [ngClass]="claseEstado(recurso.estado)">{{ recurso.estado }}</span>
+        </div>
+
+        <div class="resultado-detalles">
+          <div class="detalle-box">
+            <span>Categoría</span>
+            <strong>{{ recurso.categoria || 'General' }}</strong>
+          </div>
+          <div class="detalle-box">
+            <span>Disponibles</span>
+            <strong>{{ recurso.cantidad }} {{ recurso.cantidad === 1 ? 'unidad' : 'unidades' }}</strong>
+          </div>
         </div>
 
         @if (modo === 'devolucion') {
@@ -55,7 +91,7 @@
           </div>
         }
 
-        <button class="nx-boton" (click)="registrar()">
+        <button type="button" class="nx-boton" [disabled]="procesando" (click)="registrar()">
           {{ modo === 'prestamo' ? 'Registrar préstamo' : 'Registrar devolución' }}
         </button>
       </div>
@@ -64,11 +100,27 @@
   </div>
 </ion-content>
 
-<ion-footer class="ion-no-border">
+<ion-footer class="ion-no-border footer-wrapper">
   <nav class="nx-barra">
-    <a routerLink="/escanear" class="activa"><ion-icon name="scan-outline"></ion-icon>Escanear</a>
-    <a routerLink="/gestion-reservas"><ion-icon name="list-outline"></ion-icon>Solicitudes</a>
-    <a routerLink="/admin-recursos"><ion-icon name="cube-outline"></ion-icon>Inventario</a>
-    <a routerLink="/login"><ion-icon name="log-out-outline"></ion-icon>Salir</a>
+    <a routerLink="/inicio" routerLinkActive="activa" [routerLinkActiveOptions]="{ exact: true }">
+      <ion-icon name="home-outline"></ion-icon>
+      <span>Inicio</span>
+    </a>
+    <a routerLink="/admin-recursos" routerLinkActive="activa">
+      <ion-icon name="cube-outline"></ion-icon>
+      <span>Recursos</span>
+    </a>
+    <a routerLink="/escanear" routerLinkActive="activa">
+      <ion-icon name="scan-outline"></ion-icon>
+      <span>Escanear</span>
+    </a>
+    <a routerLink="/gestion-reservas" routerLinkActive="activa">
+      <ion-icon name="document-text-outline"></ion-icon>
+      <span>Gestión</span>
+    </a>
+    <a routerLink="/registros" routerLinkActive="activa">
+      <ion-icon name="checkmark-done-outline"></ion-icon>
+      <span>Aprobadas</span>
+    </a>
   </nav>
 </ion-footer>
