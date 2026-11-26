@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from urllib.parse import unquote
 
 import BackEnd.Functions as CallMethod
 import BackEnd.GlobalInfo.ResponseMessages as Messages
@@ -7,6 +8,16 @@ import BackEnd.GlobalInfo.ResponseMessages as Messages
 # Instancia
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}}, methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"], allow_headers=["Content-Type", "Authorization"])
+
+
+# En Vercel los datos de la dirección llegan codificados (el "@" de un correo llega como "%40").
+# Aquí se decodifican antes de llegar a cada ruta, así funciona igual en Vercel y en tu computadora.
+@app.url_value_preprocessor
+def fnDecodificarValoresUrl(endpoint, values):
+    if values:
+        for clave in values:
+            if isinstance(values[clave], str):
+                values[clave] = unquote(values[clave])
 
 @app.route('/')
 def Getmessage():
