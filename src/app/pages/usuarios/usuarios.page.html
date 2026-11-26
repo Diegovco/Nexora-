@@ -1,13 +1,155 @@
-<ion-header [translucent]="true">
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>usuarios</ion-title>
+    <div class="logo-container" slot="start">
+      <div class="logo">
+        <img src="assets/img/nexora-logo.png" alt="Nexora Logo" />
+      </div>
+      <div class="header-text">
+        <span class="sub-hola">Perfil activo</span>
+        <h1 class="app-title">{{ nombre || 'Usuario' }}</h1>
+      </div>
+    </div>
+
+    <ion-buttons slot="end">
+      <ion-button class="logout-btn" (click)="cerrarSesion()" title="Cerrar sesión">
+        <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">usuarios</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="login-fondo">
+  <div class="main-wrapper">
+    <!-- Tarjeta con nombre, rol, correo y matrícula del usuario activo -->
+    <div class="item-card profile-card">
+      <div class="profile-top">
+        <div class="avatar-box">
+          {{ (nombre || correo || 'U').slice(0, 2).toUpperCase() }}
+        </div>
+        <div class="profile-info">
+          <div class="profile-name-row">
+            <h4 class="item-title">{{ nombre || correo || 'Sin nombre' }}</h4>
+            @if (rol) {
+              <span class="rol-pill">
+                <ion-icon name="shield-checkmark-outline"></ion-icon>
+                {{ rol }}
+              </span>
+            }
+          </div>
+
+          <div class="profile-meta">
+            <p class="item-subtitle">
+              <ion-icon name="card-outline"></ion-icon>
+              <span>Matrícula: <strong>{{ matricula || 'No registrada' }}</strong></span>
+            </p>
+            <p class="item-subtitle">
+              <ion-icon name="at-outline"></ion-icon>
+              <span>Correo: <strong>{{ correo || 'No registrado' }}</strong></span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Título dinámico de la Pila LIFO según rol -->
+    <div class="section-header">
+      <h5 class="section-title">
+        {{ esEstudiante ? 'Mis Reservas Aprobadas (Pila LIFO)' : 'Reservas Aprobadas por mí (Pila LIFO)' }}
+      </h5>
+      <span class="badge-total">{{ historialReservas.length }} total</span>
+    </div>
+
+    <!-- Lista de reservas en orden LIFO (la más reciente en el tope) -->
+    @if (cargando) {
+      <div class="empty-state">
+        <p>Cargando historial...</p>
+      </div>
+    } @else {
+      <div class="lista-historial">
+        @for (res of historialReservas; track res.reserva_id || $index; let i = $index) {
+          <div class="item-card historial-item" [class.top-item]="i === 0">
+            <div class="item-info">
+              <div class="icon-box" [class.is-top]="i === 0">
+                {{ i === 0 ? 'TOP' : '#' + (historialReservas.length - i) }}
+              </div>
+              <div class="item-text">
+                <h4 class="item-title">{{ res.nombreRecurso }} ({{ res.codigoRecurso }})</h4>
+                @if (!esEstudiante) {
+                  <p class="item-subtitle">Solicitante: <strong>{{ res.solicitante }}</strong></p>
+                }
+                <p class="item-subtitle">{{ res.ubicacion }}</p>
+                <p class="item-subtitle">{{ res.fecha }} · {{ res.horaInicio }} – {{ res.horaFin }}</p>
+                <p class="item-subtitle">Movimiento: {{ res.fechaMovimiento }}</p>
+              </div>
+            </div>
+
+            <div class="acciones-derecha" style="display: flex; align-items: center; gap: 8px;">
+              @if (esEstudiante) {
+                <button
+                  type="button"
+                  (click)="irAEscanear(res)"
+                  title="Escanear QR del recurso"
+                  style="width: 36px; height: 36px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); color: #38bdf8; display: flex; align-items: center; justify-content: center; cursor: pointer;"
+                >
+                  <ion-icon name="scan-outline" style="font-size: 18px;"></ion-icon>
+                </button>
+              }
+
+              <span class="badge-estado aprobada">
+                {{ res.estado }}
+              </span>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <p>
+              {{ esEstudiante
+                ? 'Aún no tienes reservas aprobadas con esta cuenta.'
+                : 'Aún no hay reservas aprobadas registradas.' }}
+            </p>
+          </div>
+        }
+      </div>
+    }
+  </div>
 </ion-content>
+
+<ion-footer class="ion-no-border footer-wrapper">
+  <nav class="nx-barra">
+    @if (esEstudiante) {
+      <a routerLink="/inicio" routerLinkActive="activa" [routerLinkActiveOptions]="{ exact: true }">
+        <ion-icon name="home-outline"></ion-icon>
+        <span>Inicio</span>
+      </a>
+      <a routerLink="/catalogo" routerLinkActive="activa">
+        <ion-icon name="grid-outline"></ion-icon>
+        <span>Catálogo</span>
+      </a>
+      <a routerLink="/mis-reservas" routerLinkActive="activa">
+        <ion-icon name="receipt-outline"></ion-icon>
+        <span>Mis Reservas</span>
+      </a>
+      <a routerLink="/reportes" routerLinkActive="activa">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <span>Reportar</span>
+      </a>
+    } @else {
+      <a routerLink="/inicio" routerLinkActive="activa" [routerLinkActiveOptions]="{ exact: true }">
+        <ion-icon name="home-outline"></ion-icon>
+        <span>Inicio</span>
+      </a>
+      <a routerLink="/nuevo-recurso" routerLinkActive="activa">
+        <ion-icon name="add-circle-outline"></ion-icon>
+        <span>Recurso</span>
+      </a>
+      <a routerLink="/gestion-reservas" routerLinkActive="activa">
+        <ion-icon name="document-text-outline"></ion-icon>
+        <span>Gestión</span>
+      </a>
+      <a routerLink="/registros" routerLinkActive="activa">
+        <ion-icon name="checkmark-done-outline"></ion-icon>
+        <span>Aprobadas</span>
+      </a>
+    }
+  </nav>
+</ion-footer>

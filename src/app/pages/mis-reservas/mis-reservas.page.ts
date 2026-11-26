@@ -1,10 +1,16 @@
 import { Component, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { IonContent, IonFooter, IonIcon } from '@ionic/angular';
+import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
+import { IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { timeOutline } from 'ionicons/icons';
+import {
+  alertCircleOutline,
+  gridOutline,
+  homeOutline,
+  receiptOutline,
+  refreshOutline,
+  timeOutline,
+} from 'ionicons/icons';
 
-import { NavInferiorComponent } from '../../components/nav-inferior/nav-inferior.component';
 import type { Reserva, ResumenReservas } from '../../models/computo.model';
 import { mensajeDeError } from '../../services/api-errores';
 import { ComputoService } from '../../services/computo.service';
@@ -15,7 +21,17 @@ import { fechaCorta } from '../../utils/fechas';
   templateUrl: './mis-reservas.page.html',
   styleUrls: ['./mis-reservas.page.scss'],
   standalone: true,
-  imports: [IonContent, IonFooter, IonIcon, NavInferiorComponent],
+  imports: [
+    RouterLink,
+    RouterLinkActive,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonContent,
+    IonFooter,
+    IonIcon,
+  ],
 })
 export class MisReservasPage {
   private readonly computo = inject(ComputoService);
@@ -31,7 +47,7 @@ export class MisReservasPage {
   readonly creada = signal<string | null>(null);
 
   constructor() {
-    addIcons({ timeOutline });
+    addIcons({ alertCircleOutline, gridOutline, homeOutline, receiptOutline, refreshOutline, timeOutline });
     this.creada.set(this.route.snapshot.queryParamMap.get('reserva'));
   }
 

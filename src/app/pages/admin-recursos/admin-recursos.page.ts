@@ -1,10 +1,18 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { IonContent, IonFooter, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addOutline, createOutline, refreshOutline, trashOutline } from 'ionicons/icons';
+import {
+  addCircleOutline,
+  addOutline,
+  checkmarkDoneOutline,
+  createOutline,
+  documentTextOutline,
+  homeOutline,
+  refreshOutline,
+  trashOutline,
+} from 'ionicons/icons';
 
-import { NavInferiorComponent } from '../../components/nav-inferior/nav-inferior.component';
 import type { Recurso } from '../../models/computo.model';
 import { mensajeDeError } from '../../services/api-errores';
 import { RecursosService } from '../../services/recursos.service';
@@ -14,7 +22,7 @@ import { RecursosService } from '../../services/recursos.service';
   templateUrl: './admin-recursos.page.html',
   styleUrls: ['./admin-recursos.page.scss'],
   standalone: true,
-  imports: [IonContent, IonFooter, IonIcon, RouterLink, NavInferiorComponent],
+  imports: [IonContent, IonFooter, IonIcon, RouterLink, RouterLinkActive],
 })
 export class AdminRecursosPage {
   private readonly recursosService = inject(RecursosService);
@@ -29,7 +37,16 @@ export class AdminRecursosPage {
   readonly mensaje = signal<string | null>(null);
 
   constructor() {
-    addIcons({ addOutline, createOutline, refreshOutline, trashOutline });
+    addIcons({
+      addCircleOutline,
+      addOutline,
+      checkmarkDoneOutline,
+      createOutline,
+      documentTextOutline,
+      homeOutline,
+      refreshOutline,
+      trashOutline,
+    });
   }
 
   ionViewWillEnter(): void {

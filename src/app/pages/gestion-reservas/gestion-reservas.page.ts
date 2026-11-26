@@ -1,10 +1,19 @@
-import { Component, inject, signal } from '@angular/core';
-import { IonContent, IonFooter, IonIcon } from '@ionic/angular';
+import { Component, computed, inject, signal } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { checkmarkCircleOutline, closeCircleOutline, refreshOutline } from 'ionicons/icons';
+import {
+  addCircleOutline,
+  barChartOutline,
+  checkmarkCircleOutline,
+  checkmarkDoneOutline,
+  closeCircleOutline,
+  documentTextOutline,
+  homeOutline,
+  refreshOutline,
+} from 'ionicons/icons';
 import { forkJoin } from 'rxjs';
 
-import { NavInferiorComponent } from '../../components/nav-inferior/nav-inferior.component';
 import type { Recurso, Reserva } from '../../models/computo.model';
 import { mensajeDeError } from '../../services/api-errores';
 import { ComputoService } from '../../services/computo.service';
@@ -15,7 +24,17 @@ import { fechaCorta } from '../../utils/fechas';
   templateUrl: './gestion-reservas.page.html',
   styleUrls: ['./gestion-reservas.page.scss'],
   standalone: true,
-  imports: [IonContent, IonFooter, IonIcon, NavInferiorComponent],
+  imports: [
+    RouterLink,
+    RouterLinkActive,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonContent,
+    IonFooter,
+    IonIcon,
+  ],
 })
 export class GestionReservasPage {
   private readonly computo = inject(ComputoService);
@@ -26,9 +45,32 @@ export class GestionReservasPage {
   readonly error = signal<string | null>(null);
   readonly mensaje = signal<string | null>(null);
   readonly procesando = signal<string | null>(null);
+  readonly filtroTexto = signal('');
+
+  readonly pendientesFiltradas = computed(() => {
+    const texto = this.filtroTexto().trim().toLowerCase();
+    if (!texto) {
+      return this.pendientes();
+    }
+    return this.pendientes().filter((reserva) =>
+      [reserva.usuarioNombre, reserva.recursoNombre, reserva.folio, reserva.estado]
+        .join(' ')
+        .toLowerCase()
+        .includes(texto),
+    );
+  });
 
   constructor() {
-    addIcons({ checkmarkCircleOutline, closeCircleOutline, refreshOutline });
+    addIcons({
+      addCircleOutline,
+      barChartOutline,
+      checkmarkCircleOutline,
+      checkmarkDoneOutline,
+      closeCircleOutline,
+      documentTextOutline,
+      homeOutline,
+      refreshOutline,
+    });
   }
 
   ionViewWillEnter(): void {
@@ -110,6 +152,10 @@ export class GestionReservasPage {
         this.error.set(mensajeDeError(error));
       },
     });
+  }
+
+  cambiarFiltro(evento: Event): void {
+    this.filtroTexto.set((evento.target as HTMLInputElement).value);
   }
 
   fechaDe(reserva: Reserva): string {

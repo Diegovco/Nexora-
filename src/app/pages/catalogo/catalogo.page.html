@@ -1,0 +1,125 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <div class="logo-container" slot="start">
+      <div class="logo">
+        <img src="assets/img/nexora-logo.png" alt="Nexora Logo" />
+      </div>
+      <h1 class="app-title">Catálogo</h1>
+    </div>
+
+    <ion-buttons slot="end" class="header-actions">
+      <ion-button id="menu-header-trigger" class="notification-btn" title="Menú">
+        <ion-icon name="ellipsis-vertical" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
+    <ion-popover
+      trigger="menu-header-trigger"
+      triggerAction="click"
+      [dismissOnSelect]="true"
+      [arrow]="false"
+      side="bottom"
+      alignment="end"
+      class="nx-header-popover"
+    >
+      <ng-template>
+        <div class="nx-menu-list">
+          <button type="button" class="nx-menu-item" routerLink="/avisos">
+            <ion-icon name="notifications-outline"></ion-icon>
+            <span>Avisos</span>
+          </button>
+
+          <button type="button" class="nx-menu-item" routerLink="/usuarios">
+            <ion-icon name="person-outline"></ion-icon>
+            <span>Perfil</span>
+          </button>
+
+          <div class="nx-menu-divider"></div>
+
+          <button type="button" class="nx-menu-item nx-menu-danger" (click)="cerrarSesion()">
+            <ion-icon name="log-out-outline"></ion-icon>
+            <span>Salir</span>
+          </button>
+        </div>
+      </ng-template>
+    </ion-popover>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="login-fondo">
+  <div class="main-wrapper">
+    <!-- Buscador -->
+    <div class="search-box">
+      <ion-icon name="search-outline" class="search-icon"></ion-icon>
+      <input
+        type="text"
+        placeholder="Buscar por nombre, código o ubicación..."
+        class="search-input"
+        [(ngModel)]="texto"
+        (input)="filtrar()"
+      />
+    </div>
+
+    <!-- Chips / Filtros -->
+    <div class="chips-container">
+      @for (c of categorias; track c) {
+        <button
+          type="button"
+          class="chip-filter"
+          [class.active]="categoria === c"
+          (click)="elegirCategoria(c)"
+        >
+          {{ c === 'Laboratorio' ? 'Laboratorios' : (c === 'Libro' ? 'Libros' : c) }}
+        </button>
+      }
+    </div>
+
+    <!-- Lista completa de Catálogo -->
+    <div class="lista-recursos">
+      @for (r of recursos; track r._id || r.codigo || $index) {
+        <div class="item-card">
+          <div class="item-info">
+            <div class="icon-box">{{ r.codigo }}</div>
+            <div class="item-text">
+              <h4 class="item-title">{{ r.nombre }}</h4>
+              <p class="item-subtitle">{{ r.ubicacion }} · Cant: {{ r.cantidad }}</p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            (click)="reservar(r)"
+            style="padding: 8px 14px; border-radius: 10px; border: none; background: #2563eb; color: #ffffff; font-size: 12px; font-weight: 600; cursor: pointer; flex-shrink: 0;"
+          >
+            Reservar
+          </button>
+        </div>
+      } @empty {
+        <div class="empty-state">
+          <p>No se encontraron recursos.</p>
+        </div>
+      }
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border footer-wrapper">
+  <nav class="nx-barra">
+    <a routerLink="/inicio" routerLinkActive="activa" [routerLinkActiveOptions]="{ exact: true }">
+      <ion-icon name="home-outline"></ion-icon>
+      <span>Inicio</span>
+    </a>
+    <a routerLink="/catalogo" routerLinkActive="activa">
+      <ion-icon name="grid-outline"></ion-icon>
+      <span>Catálogo</span>
+    </a>
+    <a routerLink="/mis-reservas" routerLinkActive="activa">
+      <ion-icon name="receipt-outline"></ion-icon>
+      <span>Mis Reservas</span>
+    </a>
+    <a routerLink="/reportes" routerLinkActive="activa">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <span>Reportar</span>
+    </a>
+  </nav>
+</ion-footer>

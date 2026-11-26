@@ -1,10 +1,9 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IonContent, IonFooter, IonIcon } from '@ionic/angular';
+import { IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { chevronBackOutline } from 'ionicons/icons';
 
-import { NavInferiorComponent } from '../../components/nav-inferior/nav-inferior.component';
 import type { Bloque, Dia, Recurso } from '../../models/computo.model';
 import { codigoDeError, mensajeDeError } from '../../services/api-errores';
 import { ComputoService } from '../../services/computo.service';
@@ -15,7 +14,7 @@ import { fechaLarga, sumarMinutos } from '../../utils/fechas';
   templateUrl: './nueva-reserva.page.html',
   styleUrls: ['./nueva-reserva.page.scss'],
   standalone: true,
-  imports: [IonContent, IonFooter, IonIcon, NavInferiorComponent],
+  imports: [IonHeader, IonToolbar, IonButtons, IonButton, IonContent, IonFooter, IonIcon],
 })
 export class NuevaReservaPage {
   private readonly computo = inject(ComputoService);
@@ -35,6 +34,10 @@ export class NuevaReservaPage {
   readonly motivoBloqueo = signal<string | null>(null);
 
   private codigo = '';
+
+  get solicitante(): string {
+    return this.computo.usuario.nombre;
+  }
 
   readonly duracion = computed(() => this.recurso()?.horario.duracionBloque ?? 60);
   readonly etiquetaFecha = computed(() => (this.fecha() ? fechaLarga(this.fecha()) : ''));
@@ -153,7 +156,7 @@ export class NuevaReservaPage {
   }
 
   volver(): void {
-    this.router.navigateByUrl('/recursos');
+    this.router.navigateByUrl('/catalogo');
   }
 
   enviar(): void {

@@ -1,5 +1,5 @@
 import type { OnInit} from '@angular/core';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonContent, IonFooter, IonIcon } from '@ionic/angular';
@@ -36,6 +36,8 @@ export class NuevoRecursoPage implements OnInit {
   private readonly recursosService = inject(RecursosService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  // La app no usa zone.js: hay que avisar a Angular cuando llegan datos de la API.
+  private readonly cdr = inject(ChangeDetectorRef);
 
   constructor() {
     addIcons({ chevronBackOutline, qrCodeOutline });
@@ -56,10 +58,12 @@ export class NuevoRecursoPage implements OnInit {
             this.ubicacion = encontrado.ubicacion;
             this.cantidad = encontrado.equipos;
             this.descripcion = encontrado.descripcion;
+            this.cdr.markForCheck();
             return;
           }
         }
         this.codigoVista = this.recursosService.generarCodigo(this.categoria, lista);
+        this.cdr.markForCheck();
       },
       error: (error) => alert(mensajeDeError(error)),
     });

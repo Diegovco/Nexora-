@@ -1,9 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { NgClass } from '@angular/common';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { IonContent, IonFooter, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { qrCodeOutline, scanOutline, listOutline, cubeOutline, logOutOutline } from 'ionicons/icons';
+import { alertCircleOutline, gridOutline, homeOutline, qrCodeOutline, scanOutline } from 'ionicons/icons';
 
 import type { Recurso } from '../../models/computo.model';
 import { codigoDeError, mensajeDeError } from '../../services/api-errores';
@@ -14,7 +15,7 @@ import { RecursosService } from '../../services/recursos.service';
   templateUrl: './escanear.page.html',
   styleUrls: ['./escanear.page.scss'],
   standalone: true,
-  imports: [IonContent, IonFooter, IonIcon, FormsModule, RouterLink],
+  imports: [NgClass, IonContent, IonFooter, IonIcon, FormsModule, RouterLink, RouterLinkActive],
 })
 export class EscanearPage {
   modo = 'prestamo';
@@ -25,9 +26,11 @@ export class EscanearPage {
   procesando = false;
 
   private readonly recursosService = inject(RecursosService);
+  // La app no usa zone.js: hay que avisar a Angular cuando llegan datos de la API.
+  private readonly cdr = inject(ChangeDetectorRef);
 
   constructor() {
-    addIcons({ qrCodeOutline, scanOutline, listOutline, cubeOutline, logOutOutline });
+    addIcons({ alertCircleOutline, gridOutline, homeOutline, qrCodeOutline, scanOutline });
   }
 
   cambiarModo(nuevoModo: string): void {
@@ -47,6 +50,7 @@ export class EscanearPage {
     this.recursosService.obtenerPorCodigo(codigo).subscribe({
       next: (recurso) => {
         this.recurso = recurso;
+        this.cdr.markForCheck();
       },
       error: (error) => {
         this.recurso = null;
@@ -54,6 +58,7 @@ export class EscanearPage {
           codigoDeError(error) === 'RECURSO_NO_ENCONTRADO'
             ? 'No se encontró ningún recurso con ese código'
             : mensajeDeError(error);
+        this.cdr.markForCheck();
       },
     });
   }
@@ -82,10 +87,12 @@ export class EscanearPage {
         this.procesando = false;
         this.mensaje =
           this.modo === 'prestamo' ? 'Préstamo registrado correctamente' : 'Devolución registrada correctamente';
+        this.cdr.markForCheck();
       },
       error: (error) => {
         this.procesando = false;
         this.mensaje = mensajeDeError(error);
+        this.cdr.markForCheck();
       },
     });
   }

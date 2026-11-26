@@ -1,108 +1,147 @@
-<ion-content class="cx-fondo">
-  <div class="cx-pagina">
-    <header class="cx-banda">
-      <div class="cx-banda-fila">
-        <button class="cx-volver" type="button" (click)="volver()" aria-label="Volver al catálogo">
-          <ion-icon name="chevron-back-outline"></ion-icon>
-        </button>
-        @if (recurso(); as laboratorio) {
-        <span class="cx-badge" [class]="'cx-badge ' + (laboratorio.estado === 'Disponible' ? 'exito' : 'aviso')">
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button class="back-btn" (click)="volver()" title="Volver">
+        <ion-icon name="chevron-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="login-fondo">
+  <div class="main-wrapper">
+    <!-- Cabecera del recurso seleccionado -->
+    <div class="recurso-hero">
+      @if (recurso(); as laboratorio) {
+        <span class="badge-estado" [class.ocupado]="laboratorio.estado !== 'Disponible'">
           {{ laboratorio.estado }}
         </span>
-        }
+      }
+      <h1 class="recurso-titulo">{{ recurso()?.nombre || 'Cargando recurso...' }}</h1>
+      @if (recurso(); as laboratorio) {
+        <p class="recurso-subtitulo">
+          {{ laboratorio.ubicacion }} · {{ laboratorio.codigo }}
+          @if (laboratorio.equipos) { · {{ laboratorio.equipos }} equipos }
+        </p>
+      }
+    </div>
+
+    <!-- Solicitante -->
+    <div class="solicitante-pill">
+      <span class="solicitante-label">Solicitante:</span>
+      <strong class="solicitante-valor">{{ solicitante }}</strong>
+    </div>
+
+    @if (cargando()) {
+      <p class="nota-reglas">Cargando horarios...</p>
+    }
+    @if (error()) {
+      <p class="cx-mensaje error">{{ error() }}</p>
+    }
+    @if (motivoBloqueo()) {
+      <p class="cx-mensaje info">{{ motivoBloqueo() }}</p>
+    }
+
+    @if (!cargando() && recurso()) {
+      <!-- Selector de día -->
+      <div class="seccion-bloque">
+        <span class="seccion-label">Elige el día</span>
+        <div class="dias-grid">
+          @for (dia of dias(); track dia.fecha) {
+            <button
+              type="button"
+              class="dia-card"
+              [class.activo]="dia.fecha === fecha()"
+              [disabled]="!dia.disponible"
+              (click)="cambiarDia(dia)"
+            >
+              <span class="dia-nombre">{{ dia.dia }}</span>
+              <span class="dia-numero">{{ dia.numero }}</span>
+            </button>
+          }
+        </div>
       </div>
 
-      <h1 class="cx-titulo">{{ recurso()?.nombre || 'Reservar laboratorio' }}</h1>
-      @if (recurso(); as laboratorio) {
-      <p class="cx-meta">{{ laboratorio.ubicacion }} · {{ laboratorio.equipos }} equipos</p>
-      }
-    </header>
-
-    <div class="cx-cuerpo">
-      @if (cargando()) {
-      <p class="cx-cargando">Cargando horarios…</p>
-      } @if (error()) {
-      <p class="cx-mensaje error">{{ error() }}</p>
-      } @if (motivoBloqueo()) {
-      <p class="cx-mensaje info">{{ motivoBloqueo() }}</p>
-      } @if (!cargando() && recurso()) {
-      <section>
-        <p class="cx-etiqueta">Elige el día</p>
-        <div class="cx-dias">
-          @for (dia of dias(); track dia.fecha) {
-          <button
-            type="button"
-            class="cx-dia"
-            [class.activo]="dia.fecha === fecha()"
-            [disabled]="!dia.disponible"
-            (click)="cambiarDia(dia)"
-          >
-            <span>{{ dia.dia }}</span>
-            <strong>{{ dia.numero }}</strong>
-          </button>
-          }
+      <!-- Horario -->
+      <div class="seccion-bloque">
+        <div class="horario-header">
+          <span class="seccion-label m-0">Horario</span>
+          <span class="fecha-larga">{{ etiquetaFecha() }}</span>
         </div>
-      </section>
 
-      <section>
-        <div class="cx-fila-titulo">
-          <p class="cx-etiqueta">Horario</p>
-          <p class="cx-gris-chico">{{ etiquetaFecha() }}</p>
-        </div>
-        <div class="cx-rejilla">
+        <div class="horas-slots-grid">
           @for (slot of slots(); track slot.hora) {
-          <button
-            type="button"
-            class="cx-hora"
-            [class]="'cx-hora ' + claseSlot(slot)"
-            [disabled]="deshabilitado(slot)"
-            [attr.aria-label]="'Bloque ' + slot.hora + ' ' + slot.estado"
-            (click)="alternar(slot)"
-          >
-            {{ slot.hora }}
-          </button>
+            <button
+              type="button"
+              class="slot-btn"
+              [class.seleccionado]="claseSlot(slot) === 'seleccionado'"
+              [class.ocupado]="slot.estado === 'ocupado'"
+              [class.no-disponible]="slot.estado !== 'libre' && slot.estado !== 'ocupado'"
+              [disabled]="deshabilitado(slot)"
+              [attr.aria-label]="'Bloque ' + slot.hora + ' ' + slot.estado"
+              (click)="alternar(slot)"
+            >
+              {{ slot.hora }}
+            </button>
           }
         </div>
-        <div class="cx-leyenda">
-          <span><i class="cx-punto seleccionado"></i>Seleccionado</span>
-          <span><i class="cx-punto libre"></i>Libre</span>
-          <span><i class="cx-punto ocupado"></i>Ocupado</span>
-          <span><i class="cx-punto mantenimiento"></i>Mantenimiento</span>
-        </div>
-      </section>
 
-      <section class="nx-campo">
-        <label class="nx-label" for="motivo">Motivo de la reserva</label>
+        <!-- Leyenda -->
+        <div class="leyenda-row">
+          <div class="leyenda-item">
+            <span class="cuadro seleccionado"></span>
+            <span>Seleccionado</span>
+          </div>
+          <div class="leyenda-item">
+            <span class="cuadro libre"></span>
+            <span>Libre</span>
+          </div>
+          <div class="leyenda-item">
+            <span class="cuadro ocupado"></span>
+            <span>Ocupado</span>
+          </div>
+          <div class="leyenda-item">
+            <span class="cuadro no-disponible"></span>
+            <span>No disponible</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Motivo -->
+      <div class="seccion-bloque">
+        <label class="seccion-label" for="motivoInput">Motivo de la reserva</label>
         <textarea
-          id="motivo"
-          class="nx-input cx-area"
+          id="motivoInput"
+          class="form-control area-motivo"
           rows="3"
           maxlength="140"
-          placeholder="Ej. Práctica de Estructuras de Datos"
+          placeholder="Ej. Práctica de Estructura de Datos"
           [value]="motivo()"
           (input)="cambiarMotivo($event)"
         ></textarea>
-        <p class="cx-gris-chico">
+        <p class="nota-reglas">
           Se revisa con 24 h de anticipación. El encargado confirma tu solicitud y te avisamos.
         </p>
-      </section>
+      </div>
 
       @if (aviso()) {
-      <p class="cx-mensaje info">{{ aviso() }}</p>
-      } }
-    </div>
+        <p class="cx-mensaje info">{{ aviso() }}</p>
+      }
+    }
   </div>
 </ion-content>
 
-<ion-footer class="ion-no-border">
-  <div class="cx-pie">
-    <div class="cx-pie-texto">
-      <span>Tu selección</span>
-      <strong>{{ seleccion().length ? horaInicio() + ' – ' + horaFin() : 'Elige un horario' }}</strong>
+<ion-footer class="ion-no-border footer-wrapper">
+  <div class="seleccion-bar">
+    <div class="seleccion-info">
+      <span class="seleccion-label">Tu selección</span>
+      <strong class="seleccion-rango">
+        {{ seleccion().length ? horaInicio() + ' – ' + horaFin() : 'Elige un horario' }}
+      </strong>
     </div>
-    <button class="nx-boton" type="button" [disabled]="!puedeEnviar()" (click)="enviar()">
-      {{ enviando() ? 'Enviando…' : 'Solicitar reserva' }}
+
+    <button type="button" class="btn-solicitar" [disabled]="!puedeEnviar()" (click)="enviar()">
+      {{ enviando() ? 'Enviando...' : 'Solicitar reserva' }}
     </button>
   </div>
-  <app-nav-inferior tipo="estudiante" />
 </ion-footer>

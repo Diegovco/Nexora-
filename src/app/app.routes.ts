@@ -3,7 +3,7 @@ import type { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'recursos',
+    redirectTo: 'catalogo',
     pathMatch: 'full',
   },
   {
@@ -12,6 +12,10 @@ export const routes: Routes = [
   },
   {
     path: 'registro',
+    loadComponent: () => import('./pages/registro/registro.page').then((m) => m.RegistroPage),
+  },
+  {
+    path: 'registros',
     loadComponent: () => import('./pages/registro/registro.page').then((m) => m.RegistroPage),
   },
   {
@@ -35,16 +39,16 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/mis-reservas/mis-reservas.page').then((m) => m.MisReservasPage),
   },
   {
+    path: 'gestion-reservas',
+    loadComponent: () => import('./pages/gestion-reservas/gestion-reservas.page').then((m) => m.GestionReservasPage),
+  },
+  {
     path: 'avisos',
     loadComponent: () => import('./pages/avisos/avisos.page').then((m) => m.AvisosPage),
   },
   {
     path: 'escanear',
     loadComponent: () => import('./pages/escanear/escanear.page').then((m) => m.EscanearPage),
-  },
-  {
-    path: 'gestion-reservas',
-    loadComponent: () => import('./pages/gestion-reservas/gestion-reservas.page').then((m) => m.GestionReservasPage),
   },
   {
     path: 'usuarios',
@@ -63,7 +67,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/nuevo-recurso/nuevo-recurso.page').then((m) => m.NuevoRecursoPage),
   },
   {
+    path: 'catalogo',
+    loadComponent: () => import('./pages/catalogo/catalogo.page').then((m) => m.CatalogoPage),
+  },
+  {
     path: '**',
-    redirectTo: 'recursos',
+    redirectTo: 'catalogo',
   },
 ];

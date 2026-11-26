@@ -1,14 +1,373 @@
-.cx-acciones ion-icon {
-  font-size: 16px;
-  vertical-align: -3px;
-  margin-right: 4px;
+ion-header {
+  background: #09111e;
 }
 
-.cx-lab-estado + .cx-lab-estado {
-  margin-top: 8px;
+ion-toolbar {
+  --background: #09111e;
+  --border-color: transparent;
+  --color: #ffffff;
+  --padding-start: 18px;
+  --padding-end: 18px;
+  --padding-top: 12px;
+  --padding-bottom: 8px;
 }
 
-.cx-lab-estado .nx-boton-sec {
-  height: 36px;
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #121e31;
+  border: 1.5px solid #24354f;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.app-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.btn-header-reportes {
+  --background: #132035;
+  --background-hover: #1c2e4a;
+  --color: #93c5fd;
+  --border-radius: 999px;
+  --padding-start: 12px;
+  --padding-end: 14px;
+  height: 34px;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: none;
+  border: 1px solid #263b5e;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 0;
+
+  ion-icon {
+    font-size: 15px;
+    margin-right: 4px;
+  }
+}
+
+.login-fondo {
+  --background: #09111e;
+  --color: #ffffff;
+}
+
+.main-wrapper {
+  padding: 8px 18px 28px 18px;
+  max-width: 540px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ==================== TARJETAS ==================== */
+.item-card {
+  background-color: #121e31;
+  border-radius: 16px;
+  padding: 15px 16px;
+  border: 1px solid #1e2d44;
+  color: #ffffff;
+}
+
+/* ==================== FILTRO SUPERIOR ==================== */
+.filtro-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.form-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #cbd5e1;
+  display: block;
+}
+
+.badge-total {
+  background-color: #1a2942;
+  color: #60a5fa;
+  border: 1px solid #263b5e;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.filtro-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.form-control {
+  background-color: #0d1626 !important;
+  color: #ffffff !important;
+  border: 1px solid #1e2d44 !important;
+  border-radius: 13px !important;
+  padding: 10px 13px !important;
+  font-size: 13px !important;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s ease;
+
+  &::placeholder {
+    color: #64748b !important;
+  }
+
+  &:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: none !important;
+  }
+}
+
+.btn-actualizar {
+  height: 42px;
+  padding: 0 13px;
+  background-color: #132035;
+  color: #e2e8f0;
+  border: 1px solid #2b3f5e;
+  border-radius: 13px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  ion-icon {
+    font-size: 15px;
+  }
+
+  &:active {
+    background-color: #1e3150;
+  }
+}
+
+/* ==================== LISTA DE RESERVAS ==================== */
+.lista-reservas {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reserva-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reserva-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.reserva-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.icon-box {
+  min-width: 40px;
+  height: 40px;
+  background-color: #1a2942;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #60a5fa;
+  flex-shrink: 0;
+}
+
+.reserva-text {
+  min-width: 0;
+  text-align: left;
+}
+
+.item-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.item-subtitle {
+  font-size: 11px;
+  color: #8b9bb4;
+  margin: 3px 0 0 0;
+  line-height: 1.35;
+
+  strong {
+    color: #e2e8f0;
+  }
+}
+
+.motivo-box {
+  background-color: #0d1626;
+  border: 1px solid #1e2d44;
+  border-radius: 12px;
+  padding: 9px 12px;
+  text-align: left;
+}
+
+/* ==================== BADGES DE ESTADO ==================== */
+.badge-estado {
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  background-color: rgba(245, 158, 11, 0.16);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.28);
   white-space: nowrap;
+  flex-shrink: 0;
+
+  &.aprobada {
+    background-color: rgba(34, 197, 94, 0.16);
+    color: #22c55e;
+    border-color: rgba(34, 197, 94, 0.25);
+  }
+
+  &.rechazada {
+    background-color: rgba(239, 68, 68, 0.16);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.25);
+  }
+}
+
+/* ==================== BOTONES APROBAR / RECHAZAR ==================== */
+.acciones-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.btn-rechazar {
+  height: 38px;
+  background-color: rgba(239, 68, 68, 0.14);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  border-radius: 11px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.btn-aprobar {
+  height: 38px;
+  background-color: #e2e8f0;
+  color: #09111e;
+  border: none;
+  border-radius: 11px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 28px 12px;
+  color: #8b9bb4;
+  font-size: 12.5px;
+}
+
+/* ==================== BARRA DE NAVEGACIÓN INFERIOR FLOTANTE ==================== */
+.footer-wrapper {
+  background: #09111e;
+  padding: 6px 18px 14px 18px;
+}
+
+.nx-barra {
+  max-width: 504px;
+  margin: 0 auto;
+  background-color: #121e31;
+  border: 1px solid #1e2d44;
+  border-radius: 20px;
+  padding: 10px 8px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+
+  a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    text-decoration: none;
+    color: #64748b;
+    font-size: 10.5px;
+    font-weight: 500;
+    flex: 1;
+    transition: color 0.15s ease;
+
+    ion-icon {
+      font-size: 20px;
+    }
+
+    &.activa {
+      color: #ffffff;
+      font-weight: 600;
+
+      ion-icon {
+        color: #ffffff;
+      }
+    }
+  }
+}
+
+/* ==================== AJUSTES PARA LA API (api-python) ==================== */
+.badge-estado {
+  text-transform: capitalize;
+}
+
+.acciones-grid.una-accion {
+  grid-template-columns: 1fr;
+}
+
+.acciones-grid button:disabled {
+  opacity: 0.5;
 }

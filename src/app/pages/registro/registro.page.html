@@ -1,13 +1,78 @@
-<ion-header [translucent]="true">
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>registro</ion-title>
+    <div class="logo-container" slot="start">
+      <div class="logo">
+        <img src="assets/img/nexora-logo.png" alt="Nexora Logo" />
+      </div>
+      <h1 class="app-title">Registro de Aprobadas</h1>
+    </div>
+
+    <span slot="end" class="nx-insignia">Cola FIFO</span>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">registro</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="login-fondo">
+  <div class="main-wrapper">
+    <!-- Barra superior de cola y botón Atender #1 -->
+    <div class="cola-bar">
+      <span class="cola-contador">En cola: <strong>{{ colaAprobadas.length }}</strong></span>
+
+      @if (colaAprobadas.length > 0) {
+        <button type="button" class="btn-atender" (click)="atenderSiguiente()">
+          <ion-icon name="checkmark-done-outline"></ion-icon>
+          <span>Atender #1</span>
+        </button>
+      }
+    </div>
+
+    @if (cargando) {
+      <div class="empty-state">
+        <p>Cargando registro de reservas aprobadas...</p>
+      </div>
+    } @else {
+      <div class="lista-cola">
+        @for (item of colaAprobadas; track item.reserva_id || $index; let i = $index) {
+          <div class="item-card" [class.turno-activo]="i === 0">
+            <div class="item-info">
+              <div class="icon-box">#{{ i + 1 }}</div>
+              <div class="item-text">
+                <h4 class="item-title">{{ item.nombreRecurso }} ({{ item.codigoRecurso }})</h4>
+                <p class="item-subtitle">Matrícula: <strong>{{ item.solicitante }}</strong> · {{ item.ubicacion }}</p>
+                <p class="item-subtitle">{{ item.fecha }} · {{ item.horaInicio }} – {{ item.horaFin }}</p>
+                <p class="item-subtitle">Aprobada: {{ item.fechaAprobacion }}</p>
+              </div>
+            </div>
+            <span class="badge-estado" [class.en-turno]="i === 0">
+              {{ i === 0 ? 'En turno' : 'Aprobada' }}
+            </span>
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <p>Aún no hay reservas aprobadas en la cola de registro.</p>
+          </div>
+        }
+      </div>
+    }
+  </div>
 </ion-content>
+
+<ion-footer class="ion-no-border footer-wrapper">
+  <nav class="nx-barra">
+    <a routerLink="/inicio" routerLinkActive="activa" [routerLinkActiveOptions]="{ exact: true }">
+      <ion-icon name="home-outline"></ion-icon>
+      <span>Inicio</span>
+    </a>
+    <a routerLink="/nuevo-recurso" routerLinkActive="activa">
+      <ion-icon name="add-circle-outline"></ion-icon>
+      <span>Recurso</span>
+    </a>
+    <a routerLink="/gestion-reservas" routerLinkActive="activa">
+      <ion-icon name="document-text-outline"></ion-icon>
+      <span>Gestión</span>
+    </a>
+    <a routerLink="/registros" routerLinkActive="activa">
+      <ion-icon name="checkmark-done-outline"></ion-icon>
+      <span>Aprobadas</span>
+    </a>
+  </nav>
+</ion-footer>

@@ -1,13 +1,212 @@
-<ion-header [translucent]="true">
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>inicio</ion-title>
+    <div class="logo-container" slot="start">
+      <div class="logo">
+        <img src="assets/img/nexora-logo.png" alt="Nexora Logo" />
+      </div>
+      <div class="saludo-box">
+        <span class="saludo-hola">Hola,</span>
+        <h1 class="app-title">{{ nombreUsuario }}</h1>
+      </div>
+    </div>
+
+    <ion-buttons slot="end" class="header-actions">
+      <ion-button id="menu-header-trigger" class="notification-btn" title="Menú">
+        <ion-icon name="ellipsis-vertical" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
+    <ion-popover
+      trigger="menu-header-trigger"
+      triggerAction="click"
+      [dismissOnSelect]="true"
+      side="bottom"
+      alignment="end"
+      class="nx-header-popover"
+    >
+      <ng-template>
+        <div class="nx-menu-list">
+          <button type="button" class="nx-menu-item" routerLink="/avisos">
+            <ion-icon name="notifications-outline"></ion-icon>
+            <span>Avisos</span>
+          </button>
+
+          <button type="button" class="nx-menu-item" routerLink="/usuarios">
+            <ion-icon name="person-outline"></ion-icon>
+            <span>Perfil</span>
+          </button>
+
+          <div class="nx-menu-divider"></div>
+
+          <button type="button" class="nx-menu-item nx-menu-danger" (click)="cerrarSesion()">
+            <ion-icon name="log-out-outline"></ion-icon>
+            <span>Salir</span>
+          </button>
+        </div>
+      </ng-template>
+    </ion-popover>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">inicio</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="login-fondo">
+  <div class="main-wrapper">
+    @if (esEstudiante) {
+      <!-- VISTA ESTUDIANTE -->
+      <div class="stats-grid stats-grid-3">
+        <div class="peticiones">
+          <h2>{{ totalReservasProximas }}</h2>
+          <p>Próximas</p>
+        </div>
+
+        <div class="peticiones">
+          <h2>{{ totalReservasHoy }}</h2>
+          <p>Reservas hoy</p>
+        </div>
+
+        <div class="peticiones">
+          <h2>{{ turnoEsperaProxima }}</h2>
+          <p>En espera</p>
+        </div>
+      </div>
+
+      <!-- Tarjeta blanca de Próxima Reserva -->
+      @if (proximaReserva) {
+        <div class="reservas">
+          <div class="reserva-header">
+            <span class="sub-label">PRÓXIMA RESERVA</span>
+            <span class="badge-estado">{{ proximaReserva.estado }}</span>
+          </div>
+          <h2>{{ proximaReserva.nombreRecurso }}</h2>
+          <p>
+            {{ proximaReserva.fecha === fechaHoy ? 'Hoy' : proximaReserva.fecha }}
+            · {{ proximaReserva.horaInicio }} – {{ proximaReserva.horaFin }}
+            · {{ proximaReserva.ubicacion }}
+          </p>
+        </div>
+      } @else {
+        <div class="reservas">
+          <div class="reserva-header">
+            <span class="sub-label">PRÓXIMA RESERVA</span>
+            <span class="badge-estado">Sin turnos</span>
+          </div>
+          <h2>Sin reservas próximas</h2>
+          <p>Aún no tienes reservas programadas en la cola.</p>
+        </div>
+      }
+
+      <!-- Sección: Recursos recientes por categoría -->
+      <div class="seccion-bloque">
+        <div class="seccion-header">
+          <h3 class="titulo-seccion">Recursos recientes</h3>
+          <a routerLink="/catalogo" class="link-catalogo">Ver catálogo</a>
+        </div>
+
+        @for (r of disponibles; track r._id || r.codigo) {
+          <div class="item-card">
+            <div class="item-info">
+              <div class="icon-box">{{ obtenerSiglaRecurso(r) }}</div>
+              <div class="item-text">
+                <h4 class="item-title">{{ r.nombre }}</h4>
+                <p class="item-subtitle">{{ r.ubicacion }} · Cant: {{ r.cantidad }}</p>
+              </div>
+            </div>
+            <button class="btn-reservar" (click)="reservar(r)">Reservar</button>
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <p>No hay recursos registrados en este momento.</p>
+          </div>
+        }
+      </div>
+
+    } @else {
+      <!-- VISTA ADMINISTRATIVO -->
+      <div class="stats-grid stats-grid-2">
+        <div class="peticiones">
+          <h2>{{ totalSemanalGeneral }}</h2>
+          <p>Reservas semana</p>
+        </div>
+
+        <div class="peticiones">
+          <h2>{{ totalDiarioGeneral }}</h2>
+          <p>Reservas hoy</p>
+        </div>
+      </div>
+
+      <!-- Tarjeta blanca destacada del panel administrativo -->
+      <div class="reservas">
+        <div class="reserva-header">
+          <span class="sub-label">PANEL ADMINISTRATIVO</span>
+          <span class="badge-estado">Activo</span>
+        </div>
+        <h2>Resumen de Reservas</h2>
+        <p>
+          Hoy: {{ fechaHoy }} · {{ totalDiarioGeneral }} {{ totalDiarioGeneral === 1 ? 'solicitud hoy' : 'solicitudes hoy' }} · {{ totalSemanalGeneral }} en la semana
+        </p>
+      </div>
+
+      <!-- Desglose por Categoría: Libro, Laboratorio y Equipo AV -->
+      <div class="seccion-bloque">
+        <div class="seccion-header">
+          <h3 class="titulo-seccion">Por categoría</h3>
+          <a routerLink="/gestion-reservas" class="link-catalogo">Ver gestión</a>
+        </div>
+
+        @for (cat of estadisticasCategorias; track cat.nombre) {
+          <div class="item-card">
+            <div class="item-info">
+              <div class="icon-box">{{ cat.sigla }}</div>
+              <div class="item-text">
+                <h4 class="item-title">{{ cat.nombre }}</h4>
+                <p class="item-subtitle">
+                  Semana: {{ cat.totalSemana }} {{ cat.totalSemana === 1 ? 'reserva' : 'reservas' }} · Hoy: {{ cat.totalDia }}
+                </p>
+              </div>
+            </div>
+            <span class="btn-reservar badge-metrica">{{ cat.totalSemana }} sem / {{ cat.totalDia }} hoy</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
 </ion-content>
+
+<ion-footer class="ion-no-border footer-wrapper">
+  <nav class="nx-barra">
+    @if (esEstudiante) {
+      <a routerLink="/inicio" routerLinkActive="activa" [routerLinkActiveOptions]="{ exact: true }">
+        <ion-icon name="home-outline"></ion-icon>
+        <span>Inicio</span>
+      </a>
+      <a routerLink="/catalogo" routerLinkActive="activa">
+        <ion-icon name="grid-outline"></ion-icon>
+        <span>Catálogo</span>
+      </a>
+      <a routerLink="/mis-reservas" routerLinkActive="activa">
+        <ion-icon name="receipt-outline"></ion-icon>
+        <span>Mis Reservas</span>
+      </a>
+      <a routerLink="/reportes" routerLinkActive="activa">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <span>Reportar</span>
+      </a>
+    } @else {
+      <a routerLink="/inicio" routerLinkActive="activa" [routerLinkActiveOptions]="{ exact: true }">
+        <ion-icon name="home-outline"></ion-icon>
+        <span>Inicio</span>
+      </a>
+      <a routerLink="/nuevo-recurso" routerLinkActive="activa">
+        <ion-icon name="add-circle-outline"></ion-icon>
+        <span>Recurso</span>
+      </a>
+      <a routerLink="/gestion-reservas" routerLinkActive="activa">
+        <ion-icon name="document-text-outline"></ion-icon>
+        <span>Gestión</span>
+      </a>
+      <a routerLink="/registros" routerLinkActive="activa">
+        <ion-icon name="checkmark-done-outline"></ion-icon>
+        <span>Aprobadas</span>
+      </a>
+    }
+  </nav>
+</ion-footer>
