@@ -10,7 +10,26 @@ export class ComputoService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiBaseUrl}/computo`;
 
-  readonly usuario = environment.usuario;
+  /**
+   * Usuario que hace las reservas. Si alguien inició sesión en la pantalla de
+   * login, se usa ese usuario; si no, el usuario de prueba de environment.ts.
+   */
+  get usuario(): { id: string; nombre: string } {
+    try {
+      const raw = localStorage.getItem('nexora_active_user') || localStorage.getItem('usuarioNexora');
+      if (raw) {
+        const datos = JSON.parse(raw);
+        const id = String(datos.strmatricula || datos.matricula || datos.strcorreoUsuario || datos.correo || '').trim();
+        const nombre = String(datos.strnombre || datos.strnombreUsuario || datos.nombre || id).trim();
+        if (id.length >= 3) {
+          return { id, nombre };
+        }
+      }
+    } catch {
+      // Si el dato guardado no es válido, se usa el usuario de prueba.
+    }
+    return environment.usuario;
+  }
 
   private get encabezadosAdmin(): HttpHeaders {
     return new HttpHeaders({ 'X-Api-Key': environment.adminApiKey });

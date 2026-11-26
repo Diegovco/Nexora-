@@ -1,6 +1,5 @@
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideHttpClient } from '@angular/common/http';
 import {
   RouteReuseStrategy,
   provideRouter,
@@ -19,6 +18,5 @@ bootstrapApplication(AppComponent, {
     provideIonicAngular(),
     provideHttpClient(withFetch()),
     provideRouter(routes, withPreloading(PreloadAllModules), withComponentInputBinding()),
-    provideHttpClient(),
   ],
 });

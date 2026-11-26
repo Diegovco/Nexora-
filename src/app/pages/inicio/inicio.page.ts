@@ -28,9 +28,19 @@ import {
   addCircleOutline,
   ellipsisVertical
 } from 'ionicons/icons';
-import { Recurso } from '../../services/recursos.service';
 
-export interface RecursoInicio extends Recurso {
+/** Forma del recurso que devuelve la API de la carpeta API/ (Flask). */
+interface RecursoBase {
+  codigo: string;
+  nombre: string;
+  categoria: string;
+  ubicacion: string;
+  estado: string;
+  cantidad: number;
+  descripcion: string;
+}
+
+export interface RecursoInicio extends RecursoBase {
   _id?: string;
 }
 

@@ -27,9 +27,20 @@ import {
   receiptOutline,
   alertCircleOutline
 } from 'ionicons/icons';
-import { RecursosService, Recurso } from '../../services/recursos.service';
+import { RecursosService } from '../../services/recursos.service';
 
-export interface RecursoCatalogo extends Recurso {
+/** Forma del recurso que devuelve la API de la carpeta API/ (Flask). */
+interface RecursoBase {
+  codigo: string;
+  nombre: string;
+  categoria: string;
+  ubicacion: string;
+  estado: string;
+  cantidad: number;
+  descripcion: string;
+}
+
+export interface RecursoCatalogo extends RecursoBase {
   _id?: string;
 }
 
