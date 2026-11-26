@@ -1,13 +1,105 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>mis-reservas</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content class="cx-fondo">
+  <div class="cx-pagina">
+    <header class="cx-banda">
+      <div class="cx-banda-fila">
+        <div class="cx-identidad">
+          <img class="cx-logo" src="assets/img/nexora-logo.png" alt="Nexora" />
+          <span class="nx-insignia">Estudiante</span>
+        </div>
+      </div>
+      <h1 class="cx-titulo">Mis reservas</h1>
+      <p class="cx-meta">Solicitudes de cómputo y su estado de aprobación.</p>
+    </header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">mis-reservas</ion-title>
-    </ion-toolbar>
-  </ion-header>
+    <div class="cx-cuerpo">
+      <div class="cx-resumen">
+        <div class="cx-metrica">
+          <strong>{{ resumen().activas }} / {{ resumen().limite }}</strong>
+          <span>Activas</span>
+        </div>
+        <div class="cx-metrica alerta">
+          <strong>{{ resumen().porVencer }}</strong>
+          <span>En 48 h</span>
+        </div>
+        <div class="cx-metrica">
+          <strong>{{ resumen().pendientes }}</strong>
+          <span>En espera</span>
+        </div>
+      </div>
+
+      @if (creada()) {
+      <p class="cx-mensaje exito">Solicitud {{ creada() }} enviada. Te avisaremos cuando el encargado la revise.</p>
+      } @if (mensaje()) {
+      <p class="cx-mensaje exito">{{ mensaje() }}</p>
+      } @if (error()) {
+      <p class="cx-mensaje error">{{ error() }}</p>
+      } @if (cargando()) {
+      <p class="cx-cargando">Cargando tus reservas…</p>
+      }
+
+      <section class="cx-seccion">
+        <p class="cx-etiqueta">Próximas reservas</p>
+
+        @for (reserva of proximas(); track reserva.id) {
+        <article class="nx-tarjeta cx-reserva">
+          <div class="cx-lab-fila">
+            <div>
+              <strong>{{ reserva.recursoNombre }}</strong>
+              <p class="nx-gris">{{ reserva.folio }}</p>
+            </div>
+            <span class="cx-badge" [class]="'cx-badge ' + claseEstado(reserva.estado)"> {{ reserva.estado }} </span>
+          </div>
+
+          <p class="cx-lab-detalle">{{ fechaDe(reserva) }} · {{ reserva.horaInicio }} – {{ reserva.horaFin }}</p>
+          <p class="cx-lab-detalle">{{ reserva.motivo }}</p>
+
+          @if (reserva.estado === 'rechazada' && reserva.motivoRechazo) {
+          <p class="cx-mensaje error">Motivo: {{ reserva.motivoRechazo }}</p>
+          }
+
+          <div class="cx-reserva-pie">
+            <span class="cx-gris-chico">
+              <ion-icon name="time-outline"></ion-icon>
+              {{ reserva.estado === 'pendiente' ? 'Esperando aprobación' : 'Confirmada' }}
+            </span>
+            <button
+              type="button"
+              class="nx-boton-sec cx-peligro"
+              [disabled]="cancelando() === reserva.id"
+              (click)="cancelar(reserva)"
+            >
+              {{ cancelando() === reserva.id ? 'Cancelando…' : 'Cancelar reserva' }}
+            </button>
+          </div>
+        </article>
+        } @empty { @if (!cargando() && !error()) {
+        <p class="cx-vacio">No tienes reservas próximas. Elige un laboratorio en el catálogo.</p>
+        } }
+      </section>
+
+      @if (historial().length > 0) {
+      <section class="cx-seccion">
+        <p class="cx-etiqueta">Historial</p>
+        @for (reserva of historial(); track reserva.id) {
+        <article class="nx-tarjeta cx-reserva cx-historial">
+          <div class="cx-lab-fila">
+            <div>
+              <strong>{{ reserva.recursoNombre }}</strong>
+              <p class="nx-gris">{{ fechaDe(reserva) }} · {{ reserva.horaInicio }} – {{ reserva.horaFin }}</p>
+            </div>
+            <span class="cx-badge" [class]="'cx-badge ' + claseEstado(reserva.estado)"> {{ reserva.estado }} </span>
+          </div>
+          @if (reserva.motivoRechazo) {
+          <p class="cx-gris-chico">Motivo: {{ reserva.motivoRechazo }}</p>
+          }
+        </article>
+        }
+      </section>
+      }
+    </div>
+  </div>
 </ion-content>
+
+<ion-footer class="ion-no-border">
+  <app-nav-inferior tipo="estudiante" />
+</ion-footer>

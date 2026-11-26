@@ -1,64 +1,89 @@
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { IonContent, IonFooter, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addOutline, cubeOutline, peopleOutline, barChartOutline, logOutOutline } from 'ionicons/icons';
-import { RecursosService, Recurso } from '../../services/recursos.service';
+import { addOutline, createOutline, refreshOutline, trashOutline } from 'ionicons/icons';
+
+import { NavInferiorComponent } from '../../components/nav-inferior/nav-inferior.component';
+import type { Recurso } from '../../models/computo.model';
+import { mensajeDeError } from '../../services/api-errores';
+import { RecursosService } from '../../services/recursos.service';
 
 @Component({
   selector: 'app-admin-recursos',
   templateUrl: './admin-recursos.page.html',
   styleUrls: ['./admin-recursos.page.scss'],
   standalone: true,
-  imports: [IonContent, IonFooter, IonIcon, FormsModule, RouterLink]
+  imports: [IonContent, IonFooter, IonIcon, RouterLink, NavInferiorComponent],
 })
 export class AdminRecursosPage {
-  recursos: Recurso[] = [];
-  texto = '';
-  categoria = 'Todos';
-  categorias = ['Todos', 'Laboratorio', 'Libro', 'Equipo AV'];
+  private readonly recursosService = inject(RecursosService);
+  private readonly router = inject(Router);
 
-  constructor(private recursosService: RecursosService, private router: Router) {
-    addIcons({ addOutline, cubeOutline, peopleOutline, barChartOutline, logOutOutline });
+  readonly recursos = signal<Recurso[]>([]);
+  readonly texto = signal('');
+  readonly categoria = signal('Todos');
+  readonly categorias = ['Todos', 'Laboratorio', 'Libro', 'Equipo AV'];
+  readonly cargando = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly mensaje = signal<string | null>(null);
+
+  constructor() {
+    addIcons({ addOutline, createOutline, refreshOutline, trashOutline });
   }
 
-  // Se ejecuta cada vez que entras a la pantalla (también al regresar de "Nuevo recurso")
-  ionViewWillEnter() {
-    this.filtrar();
+  ionViewWillEnter(): void {
+    this.cargar();
   }
 
-  filtrar() {
-    const todos = this.recursosService.obtenerTodos();
-    const buscado = this.texto.toLowerCase();
-    const resultado: Recurso[] = [];
+  cargar(): void {
+    this.cargando.set(true);
+    this.error.set(null);
+    this.recursosService.listar(this.categoria(), this.texto()).subscribe({
+      next: (recursos) => {
+        this.recursos.set(recursos);
+        this.cargando.set(false);
+      },
+      error: (error) => {
+        this.error.set(mensajeDeError(error));
+        this.cargando.set(false);
+      },
+    });
+  }
 
-    for (let i = 0; i < todos.length; i++) {
-      const r = todos[i];
-      const coincideTexto = r.nombre.toLowerCase().includes(buscado) || r.codigo.toLowerCase().includes(buscado);
-      const coincideCategoria = this.categoria === 'Todos' || r.categoria === this.categoria;
-      if (coincideTexto && coincideCategoria) {
-        resultado.push(r);
-      }
+  cambiarTexto(evento: Event): void {
+    this.texto.set((evento.target as HTMLInputElement).value);
+    this.cargar();
+  }
+
+  elegirCategoria(categoria: string): void {
+    this.categoria.set(categoria);
+    this.cargar();
+  }
+
+  editar(recurso: Recurso): void {
+    this.router.navigate(['/nuevo-recurso'], { queryParams: { codigo: recurso.codigo } });
+  }
+
+  eliminar(recurso: Recurso): void {
+    if (recurso.estado === 'Prestado') {
+      this.error.set('No se puede eliminar: tiene un préstamo activo.');
+      return;
     }
-    this.recursos = resultado;
-  }
-
-  elegirCategoria(c: string) {
-    this.categoria = c;
-    this.filtrar();
-  }
-
-  editar(r: Recurso) {
-    this.router.navigate(['/nuevo-recurso'], { queryParams: { codigo: r.codigo } });
-  }
-
-  eliminar(r: Recurso) {
-    if (r.estado === 'Prestado') { return; }
-    if (confirm('¿Seguro que quieres eliminar "' + r.nombre + '"?')) {
-      this.recursosService.eliminar(r.codigo);
-      this.filtrar();
+    if (!confirm(`¿Seguro que quieres eliminar "${recurso.nombre}"?`)) {
+      return;
     }
+
+    this.mensaje.set(null);
+    this.recursosService.eliminar(recurso.codigo).subscribe({
+      next: () => {
+        this.mensaje.set('Recurso eliminado.');
+        this.cargar();
+      },
+      error: (error) => {
+        this.error.set(mensajeDeError(error));
+      },
+    });
   }
 
   claseEstado(estado: string): string {

@@ -1,13 +1,108 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>nueva-reserva</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content class="cx-fondo">
+  <div class="cx-pagina">
+    <header class="cx-banda">
+      <div class="cx-banda-fila">
+        <button class="cx-volver" type="button" (click)="volver()" aria-label="Volver al catálogo">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </button>
+        @if (recurso(); as laboratorio) {
+        <span class="cx-badge" [class]="'cx-badge ' + (laboratorio.estado === 'Disponible' ? 'exito' : 'aviso')">
+          {{ laboratorio.estado }}
+        </span>
+        }
+      </div>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">nueva-reserva</ion-title>
-    </ion-toolbar>
-  </ion-header>
+      <h1 class="cx-titulo">{{ recurso()?.nombre || 'Reservar laboratorio' }}</h1>
+      @if (recurso(); as laboratorio) {
+      <p class="cx-meta">{{ laboratorio.ubicacion }} · {{ laboratorio.equipos }} equipos</p>
+      }
+    </header>
+
+    <div class="cx-cuerpo">
+      @if (cargando()) {
+      <p class="cx-cargando">Cargando horarios…</p>
+      } @if (error()) {
+      <p class="cx-mensaje error">{{ error() }}</p>
+      } @if (motivoBloqueo()) {
+      <p class="cx-mensaje info">{{ motivoBloqueo() }}</p>
+      } @if (!cargando() && recurso()) {
+      <section>
+        <p class="cx-etiqueta">Elige el día</p>
+        <div class="cx-dias">
+          @for (dia of dias(); track dia.fecha) {
+          <button
+            type="button"
+            class="cx-dia"
+            [class.activo]="dia.fecha === fecha()"
+            [disabled]="!dia.disponible"
+            (click)="cambiarDia(dia)"
+          >
+            <span>{{ dia.dia }}</span>
+            <strong>{{ dia.numero }}</strong>
+          </button>
+          }
+        </div>
+      </section>
+
+      <section>
+        <div class="cx-fila-titulo">
+          <p class="cx-etiqueta">Horario</p>
+          <p class="cx-gris-chico">{{ etiquetaFecha() }}</p>
+        </div>
+        <div class="cx-rejilla">
+          @for (slot of slots(); track slot.hora) {
+          <button
+            type="button"
+            class="cx-hora"
+            [class]="'cx-hora ' + claseSlot(slot)"
+            [disabled]="deshabilitado(slot)"
+            [attr.aria-label]="'Bloque ' + slot.hora + ' ' + slot.estado"
+            (click)="alternar(slot)"
+          >
+            {{ slot.hora }}
+          </button>
+          }
+        </div>
+        <div class="cx-leyenda">
+          <span><i class="cx-punto seleccionado"></i>Seleccionado</span>
+          <span><i class="cx-punto libre"></i>Libre</span>
+          <span><i class="cx-punto ocupado"></i>Ocupado</span>
+          <span><i class="cx-punto mantenimiento"></i>Mantenimiento</span>
+        </div>
+      </section>
+
+      <section class="nx-campo">
+        <label class="nx-label" for="motivo">Motivo de la reserva</label>
+        <textarea
+          id="motivo"
+          class="nx-input cx-area"
+          rows="3"
+          maxlength="140"
+          placeholder="Ej. Práctica de Estructuras de Datos"
+          [value]="motivo()"
+          (input)="cambiarMotivo($event)"
+        ></textarea>
+        <p class="cx-gris-chico">
+          Se revisa con 24 h de anticipación. El encargado confirma tu solicitud y te avisamos.
+        </p>
+      </section>
+
+      @if (aviso()) {
+      <p class="cx-mensaje info">{{ aviso() }}</p>
+      } }
+    </div>
+  </div>
 </ion-content>
+
+<ion-footer class="ion-no-border">
+  <div class="cx-pie">
+    <div class="cx-pie-texto">
+      <span>Tu selección</span>
+      <strong>{{ seleccion().length ? horaInicio() + ' – ' + horaFin() : 'Elige un horario' }}</strong>
+    </div>
+    <button class="nx-boton" type="button" [disabled]="!puedeEnviar()" (click)="enviar()">
+      {{ enviando() ? 'Enviando…' : 'Solicitar reserva' }}
+    </button>
+  </div>
+  <app-nav-inferior tipo="estudiante" />
+</ion-footer>

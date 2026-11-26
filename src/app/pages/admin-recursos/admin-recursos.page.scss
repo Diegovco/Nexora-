@@ -5,17 +5,22 @@
 }
 .recurso strong {
   font-size: 15px;
-  color: #FFFFFF;
+  color: #ffffff;
 }
 .acciones {
   display: flex;
   gap: 8px;
 }
+.acciones .nx-boton-sec {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
 .eliminar {
-  color: #FF9A94;
+  color: #ff9a94;
 }
 .aviso {
   margin: 0;
   font-size: 12px;
-  color: #F7C36B;
+  color: #f7c36b;
 }

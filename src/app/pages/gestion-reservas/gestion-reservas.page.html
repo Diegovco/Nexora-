@@ -1,13 +1,95 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>gestion-reservas</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content class="cx-fondo">
+  <div class="cx-pagina">
+    <header class="cx-banda">
+      <div class="cx-banda-fila">
+        <div class="cx-identidad">
+          <img class="cx-logo" src="assets/img/nexora-logo.png" alt="Nexora" />
+          <span class="nx-insignia">Encargado</span>
+        </div>
+        <button class="cx-volver" type="button" (click)="cargar()" aria-label="Actualizar solicitudes">
+          <ion-icon name="refresh-outline"></ion-icon>
+        </button>
+      </div>
+      <h1 class="cx-titulo">Solicitudes</h1>
+      <p class="cx-meta">Aprueba reservas y controla el estado de los laboratorios.</p>
+    </header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">gestion-reservas</ion-title>
-    </ion-toolbar>
-  </ion-header>
+    <div class="cx-cuerpo">
+      @if (mensaje()) {
+      <p class="cx-mensaje exito">{{ mensaje() }}</p>
+      } @if (error()) {
+      <p class="cx-mensaje error">{{ error() }}</p>
+      } @if (cargando()) {
+      <p class="cx-cargando">Cargando solicitudes…</p>
+      }
+
+      <section class="cx-seccion">
+        <p class="cx-etiqueta">Pendientes de aprobación ({{ pendientes().length }})</p>
+
+        @for (reserva of pendientes(); track reserva.id) {
+        <article class="nx-tarjeta cx-solicitud">
+          <div class="cx-lab-fila">
+            <div>
+              <strong>{{ reserva.recursoNombre }}</strong>
+              <p class="nx-gris">{{ reserva.folio }} · {{ reserva.usuarioNombre }}</p>
+            </div>
+            <span class="cx-badge aviso">{{ reserva.estado }}</span>
+          </div>
+
+          <p class="cx-lab-detalle">{{ fechaDe(reserva) }} · {{ reserva.horaInicio }} – {{ reserva.horaFin }}</p>
+          <p class="cx-lab-detalle">{{ reserva.motivo }}</p>
+
+          <div class="cx-acciones">
+            <button
+              type="button"
+              class="nx-boton-sec"
+              [disabled]="procesando() === reserva.id"
+              (click)="aprobar(reserva)"
+            >
+              <ion-icon name="checkmark-circle-outline"></ion-icon>
+              Aprobar
+            </button>
+            <button
+              type="button"
+              class="nx-boton-sec cx-peligro"
+              [disabled]="procesando() === reserva.id"
+              (click)="rechazar(reserva)"
+            >
+              <ion-icon name="close-circle-outline"></ion-icon>
+              Rechazar
+            </button>
+          </div>
+        </article>
+        } @empty { @if (!cargando() && !error()) {
+        <p class="cx-vacio">No hay solicitudes pendientes.</p>
+        } }
+      </section>
+
+      <section class="cx-seccion">
+        <p class="cx-etiqueta">Estado de los laboratorios</p>
+
+        @for (laboratorio of laboratorios(); track laboratorio.codigo) {
+        <div class="cx-lab-estado">
+          <div>
+            <strong>{{ laboratorio.nombre }}</strong>
+            <span class="cx-gris-chico">{{ laboratorio.equipos }} equipos · {{ laboratorio.ubicacion }}</span>
+          </div>
+          <button
+            type="button"
+            class="nx-boton-sec"
+            [class.cx-peligro]="laboratorio.estado === 'Disponible'"
+            [disabled]="procesando() === laboratorio.codigo"
+            (click)="alternarEstado(laboratorio)"
+          >
+            {{ laboratorio.estado === 'Disponible' ? 'Enviar a mantenimiento' : 'Marcar disponible' }}
+          </button>
+        </div>
+        }
+      </section>
+    </div>
+  </div>
 </ion-content>
+
+<ion-footer class="ion-no-border">
+  <app-nav-inferior tipo="admin" />
+</ion-footer>

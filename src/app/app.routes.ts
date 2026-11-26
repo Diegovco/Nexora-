@@ -3,7 +3,7 @@ import type { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'login',
+    redirectTo: 'recursos',
     pathMatch: 'full',
   },
   {
@@ -61,5 +61,9 @@ export const routes: Routes = [
   {
     path: 'nuevo-recurso',
     loadComponent: () => import('./pages/nuevo-recurso/nuevo-recurso.page').then((m) => m.NuevoRecursoPage),
+  },
+  {
+    path: '**',
+    redirectTo: 'recursos',
   },
 ];
