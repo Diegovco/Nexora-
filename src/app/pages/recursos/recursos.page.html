@@ -1,13 +1,59 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>recursos</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content class="cx-fondo">
+  <div class="cx-pagina">
+    <header class="cx-banda">
+      <div class="cx-banda-fila">
+        <div class="cx-identidad">
+          <img class="cx-logo" src="assets/img/nexora-logo.png" alt="Nexora" />
+          <span class="nx-insignia">Cómputo</span>
+        </div>
+        <button class="cx-volver" type="button" (click)="cargar()" aria-label="Actualizar catálogo">
+          <ion-icon name="refresh-outline"></ion-icon>
+        </button>
+      </div>
+      <h1 class="cx-titulo">Catálogo de laboratorios</h1>
+      <p class="cx-meta">Consulta equipos, horarios y disponibilidad en tiempo real.</p>
+    </header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">recursos</ion-title>
-    </ion-toolbar>
-  </ion-header>
+    <div class="cx-cuerpo">
+      <div class="nx-chips">
+        @for (opcion of filtros; track opcion) {
+        <button type="button" class="nx-chip" [class.activo]="filtro() === opcion" (click)="filtrar(opcion)">
+          {{ opcion }}
+        </button>
+        }
+      </div>
+
+      @if (error()) {
+      <p class="cx-mensaje error">{{ error() }}</p>
+      } @if (cargando()) {
+      <p class="cx-cargando">Cargando laboratorios…</p>
+      } @for (recurso of visibles(); track recurso.codigo) {
+      <article class="nx-tarjeta cx-lab">
+        <div class="cx-lab-fila">
+          <div>
+            <strong>{{ recurso.nombre }}</strong>
+            <p class="nx-gris">{{ recurso.ubicacion }}</p>
+          </div>
+          <span class="cx-badge" [class]="'cx-badge ' + claseEstado(recurso.estado)"> {{ recurso.estado }} </span>
+        </div>
+        <p class="cx-lab-detalle">
+          {{ recurso.equipos }} equipos · {{ recurso.horario.inicio }}–{{ recurso.horario.fin }}
+        </p>
+        <a
+          class="nx-boton cx-boton-enlace"
+          [routerLink]="['/nueva-reserva']"
+          [queryParams]="{ codigo: recurso.codigo }"
+        >
+          Ver horarios
+        </a>
+      </article>
+      } @empty { @if (!cargando() && !error()) {
+      <p class="cx-vacio">No hay laboratorios con ese filtro.</p>
+      } }
+    </div>
+  </div>
 </ion-content>
+
+<ion-footer class="ion-no-border">
+  <app-nav-inferior tipo="estudiante" />
+</ion-footer>

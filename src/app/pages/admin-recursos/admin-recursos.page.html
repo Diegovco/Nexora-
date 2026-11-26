@@ -1,70 +1,89 @@
-<ion-content>
-  <div class="nx-pagina">
-
-    <div class="nx-encabezado">
-      <div class="nx-titulo">
-        <img src="assets/img/nexora-logo.png" alt="Nexora">
-        <h1>Recursos</h1>
+<ion-content class="cx-fondo">
+  <div class="cx-pagina">
+    <header class="cx-banda">
+      <div class="cx-banda-fila">
+        <div class="cx-identidad">
+          <img class="cx-logo" src="assets/img/nexora-logo.png" alt="Nexora" />
+          <span class="nx-insignia">Administrador</span>
+        </div>
+        <button class="cx-volver" type="button" (click)="cargar()" aria-label="Actualizar inventario">
+          <ion-icon name="refresh-outline"></ion-icon>
+        </button>
       </div>
-      <span class="nx-insignia">Administrador</span>
-    </div>
+      <h1 class="cx-titulo">Recursos</h1>
+      <p class="cx-meta">Inventario de cómputo guardado en MongoDB.</p>
+    </header>
 
-    <input class="nx-input" type="search" placeholder="Buscar por nombre o código"
-           aria-label="Buscar recurso" [(ngModel)]="texto" (ngModelChange)="filtrar()">
+    <div class="cx-cuerpo">
+      <input
+        class="nx-input"
+        type="search"
+        placeholder="Buscar por nombre o código"
+        aria-label="Buscar recurso"
+        [value]="texto()"
+        (input)="cambiarTexto($event)"
+      />
 
-    <div class="nx-chips">
-      @for (c of categorias; track c) {
-        <button class="nx-chip" [class.activo]="categoria === c" (click)="elegirCategoria(c)">{{ c }}</button>
+      <div class="nx-chips">
+        @for (opcion of categorias; track opcion) {
+        <button type="button" class="nx-chip" [class.activo]="categoria() === opcion" (click)="elegirCategoria(opcion)">
+          {{ opcion }}
+        </button>
+        }
+      </div>
+
+      <a class="nx-boton cx-boton-enlace" routerLink="/nuevo-recurso">
+        <ion-icon name="add-outline"></ion-icon>
+        Nuevo recurso
+      </a>
+
+      @if (mensaje()) {
+      <p class="cx-mensaje exito">{{ mensaje() }}</p>
+      } @if (error()) {
+      <p class="cx-mensaje error">{{ error() }}</p>
       }
-    </div>
 
-    <button class="nx-boton" routerLink="/nuevo-recurso">
-      <ion-icon name="add-outline"></ion-icon> Nuevo recurso
-    </button>
+      <p class="cx-gris-chico">{{ recursos().length }} recursos</p>
 
-    <p class="nx-gris">{{ recursos.length }} recursos</p>
-
-    @for (r of recursos; track r.codigo) {
+      @if (cargando()) {
+      <p class="cx-cargando">Cargando inventario…</p>
+      } @for (recurso of recursos(); track recurso.codigo) {
       <div class="nx-tarjeta recurso">
         <div class="nx-encabezado">
           <div>
-            <strong>{{ r.nombre }}</strong>
-            <p class="nx-gris">{{ r.codigo }} · {{ r.ubicacion }}</p>
+            <strong>{{ recurso.nombre }}</strong>
+            <p class="nx-gris">{{ recurso.codigo }} · {{ recurso.ubicacion }}</p>
           </div>
-          <span class="nx-estado {{ claseEstado(r.estado) }}">{{ r.estado }}</span>
+          <span class="nx-estado {{ claseEstado(recurso.estado) }}">{{ recurso.estado }}</span>
         </div>
+
         <div class="acciones">
-          <button class="nx-boton-sec" (click)="editar(r)">Editar</button>
-          <button class="nx-boton-sec eliminar" [disabled]="r.estado === 'Prestado'" (click)="eliminar(r)">Eliminar</button>
+          <button type="button" class="nx-boton-sec" (click)="editar(recurso)">
+            <ion-icon name="create-outline"></ion-icon>
+            Editar
+          </button>
+          <button
+            type="button"
+            class="nx-boton-sec eliminar"
+            [disabled]="recurso.estado === 'Prestado'"
+            (click)="eliminar(recurso)"
+          >
+            <ion-icon name="trash-outline"></ion-icon>
+            Eliminar
+          </button>
         </div>
-        @if (r.estado === 'Prestado') {
-          <p class="aviso">No se puede eliminar: tiene un préstamo activo.</p>
+
+        @if (recurso.estado === 'Prestado') {
+        <p class="aviso">No se puede eliminar: tiene un préstamo activo.</p>
         }
       </div>
-    } @empty {
-      <p class="nx-gris">No hay recursos con ese filtro.</p>
-    }
-
+      } @empty { @if (!cargando() && !error()) {
+      <p class="cx-vacio">No hay recursos con ese filtro.</p>
+      } }
+    </div>
   </div>
 </ion-content>
 
 <ion-footer class="ion-no-border">
-  <nav class="nx-barra">
-  <a routerLink="/inicio" routerLinkActive="activa" [routerLinkActiveOptions]="{ exact: true }">
-        <ion-icon name="home-outline"></ion-icon>
-        <span>Inicio</span>
-      </a>
-      <a routerLink="/nuevo-recurso" routerLinkActive="activa">
-        <ion-icon name="add-circle-outline"></ion-icon>
-        <span>Recurso</span>
-      </a>
-      <a routerLink="/gestion-reservas" routerLinkActive="activa">
-        <ion-icon name="document-text-outline"></ion-icon>
-        <span>Gestión</span>
-      </a>
-      <a routerLink="/registros" routerLinkActive="activa">
-        <ion-icon name="checkmark-done-outline"></ion-icon>
-        <span>Aprobadas</span>
-      </a>
-  </nav>
+  <app-nav-inferior tipo="admin" />
 </ion-footer>

@@ -1,80 +1,78 @@
-import { Component, OnInit } from '@angular/core';
+import type { OnInit} from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonContent, IonFooter, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { chevronBackOutline, qrCodeOutline } from 'ionicons/icons';
+
+import type { CategoriaRecurso, Horario } from '../../models/computo.model';
+import { mensajeDeError } from '../../services/api-errores';
 import { RecursosService } from '../../services/recursos.service';
+
+const HORARIO_PREDETERMINADO: Horario = { inicio: '07:00', fin: '20:00', duracionBloque: 60 };
 
 @Component({
   selector: 'app-nuevo-recurso',
   templateUrl: './nuevo-recurso.page.html',
   styleUrls: ['./nuevo-recurso.page.scss'],
   standalone: true,
-  imports: [IonContent, IonFooter, IonIcon, FormsModule]
+  imports: [IonContent, IonFooter, IonIcon, FormsModule],
 })
 export class NuevoRecursoPage implements OnInit {
-  private apiUrl = 'http://localhost:5000';
-  recursoId = '';
   editando = false;
+  guardando = false;
   codigoVista = '';
 
   nombre = '';
-  categoria = 'Equipo AV';
+  categoria: CategoriaRecurso = 'Equipo AV';
   ubicacion = 'Almacén AV';
   cantidad = 1;
   descripcion = '';
 
-  categorias = ['Laboratorio', 'Libro', 'Equipo AV'];
+  categorias: CategoriaRecurso[] = ['Laboratorio', 'Libro', 'Equipo AV'];
   ubicaciones = ['Almacén AV', 'Biblioteca', 'Edificio B', 'Edificio C'];
 
-  constructor(
-    private recursosService: RecursosService,
-    private router: Router,
-    private route: ActivatedRoute,
-    private http: HttpClient
-  ) {
+  private readonly recursosService = inject(RecursosService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
+  constructor() {
     addIcons({ chevronBackOutline, qrCodeOutline });
   }
 
-  ngOnInit() {
-    const id = this.route.snapshot.queryParamMap.get('id');
+  ngOnInit(): void {
     const codigo = this.route.snapshot.queryParamMap.get('codigo');
 
-    if (id || codigo) {
-      this.http.get<any>(`${this.apiUrl}/getRecursos`).subscribe({
-        next: (resp) => {
-          const lista = Array.isArray(resp) ? resp : (resp?.Respuesta || []);
-          const r = lista.find((item: any) =>
-            (id && item._id === id) || (codigo && item.codigo === codigo)
-          );
-          if (r) {
+    this.recursosService.listar().subscribe({
+      next: (lista) => {
+        if (codigo) {
+          const encontrado = lista.find((recurso) => recurso.codigo === codigo);
+          if (encontrado) {
             this.editando = true;
-            this.recursoId = r._id || '';
-            this.codigoVista = r.codigo;
-            this.nombre = r.nombre;
-            this.categoria = r.categoria;
-            this.ubicacion = r.ubicacion;
-            this.cantidad = r.cantidad || 1;
-            this.descripcion = r.descripcion || '';
+            this.codigoVista = encontrado.codigo;
+            this.nombre = encontrado.nombre;
+            this.categoria = encontrado.categoria;
+            this.ubicacion = encontrado.ubicacion;
+            this.cantidad = encontrado.equipos;
+            this.descripcion = encontrado.descripcion;
+            return;
           }
         }
-      });
-      return;
-    }
-
-    this.codigoVista = this.recursosService.generarCodigo(this.categoria);
+        this.codigoVista = this.recursosService.generarCodigo(this.categoria, lista);
+      },
+      error: (error) => alert(mensajeDeError(error)),
+    });
   }
 
-  elegirCategoria(c: string) {
-    this.categoria = c;
+  elegirCategoria(categoria: CategoriaRecurso): void {
+    this.categoria = categoria;
     if (!this.editando) {
-      this.codigoVista = this.recursosService.generarCodigo(c);
+      this.codigoVista = this.recursosService.generarCodigo(categoria);
     }
   }
 
-  guardar() {
+  guardar(): void {
     if (this.nombre.trim() === '') {
       alert('Escribe el nombre del recurso');
       return;
@@ -83,42 +81,59 @@ export class NuevoRecursoPage implements OnInit {
       alert('La cantidad debe ser al menos 1');
       return;
     }
+    if (this.guardando) {
+      return;
+    }
 
-    const datosRecurso = {
-      codigo: this.codigoVista,
-      nombre: this.nombre.trim(),
-      categoria: this.categoria,
-      ubicacion: this.ubicacion,
-      estado: 'Disponible',
-      cantidad: this.cantidad,
-      descripcion: this.descripcion
-    };
+    this.guardando = true;
 
     if (this.editando) {
-      const identificador = this.recursoId || this.codigoVista;
-      this.http.put(`${this.apiUrl}/recursos/${encodeURIComponent(identificador)}`, datosRecurso).subscribe({
+      this.recursosService
+        .actualizar(this.codigoVista, {
+          nombre: this.nombre.trim(),
+          ubicacion: this.ubicacion,
+          equipos: this.cantidad,
+          descripcion: this.descripcion,
+        })
+        .subscribe({
+          next: () => {
+            this.guardando = false;
+            alert('Recurso actualizado');
+            this.router.navigateByUrl('/admin-recursos');
+          },
+          error: (error) => {
+            this.guardando = false;
+            alert(mensajeDeError(error));
+          },
+        });
+      return;
+    }
+
+    this.recursosService
+      .crear({
+        codigo: this.codigoVista || undefined,
+        nombre: this.nombre.trim(),
+        categoria: this.categoria,
+        ubicacion: this.ubicacion,
+        estado: 'Disponible',
+        equipos: this.cantidad,
+        horario: { ...HORARIO_PREDETERMINADO },
+        descripcion: this.descripcion,
+      })
+      .subscribe({
         next: () => {
-          alert('Recurso actualizado');
-          this.router.navigateByUrl('/admin-recursos');
-        },
-        error: () => {
-          alert('Error al actualizar el recurso en la base de datos.');
-        }
-      });
-    } else {
-      this.http.post(`${this.apiUrl}/recursos`, datosRecurso).subscribe({
-        next: () => {
+          this.guardando = false;
           alert('Recurso guardado con el código ' + this.codigoVista);
           this.router.navigateByUrl('/admin-recursos');
         },
-        error: () => {
-          alert('Error al guardar el recurso en la base de datos.');
-        }
+        error: (error) => {
+          this.guardando = false;
+          alert(mensajeDeError(error));
+        },
       });
-    }
   }
 
-  cancelar() {
+  cancelar(): void {
     this.router.navigateByUrl('/admin-recursos');
   }
 }

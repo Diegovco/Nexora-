@@ -1,115 +1,105 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar>
-    <div class="logo-container" slot="start">
-      <div class="logo">
-        <img src="assets/img/nexora-logo.png" alt="Nexora Logo" />
+<ion-content class="cx-fondo">
+  <div class="cx-pagina">
+    <header class="cx-banda">
+      <div class="cx-banda-fila">
+        <div class="cx-identidad">
+          <img class="cx-logo" src="assets/img/nexora-logo.png" alt="Nexora" />
+          <span class="nx-insignia">Estudiante</span>
+        </div>
       </div>
-      <h1 class="app-title">Mis reservas</h1>
-    </div>
+      <h1 class="cx-titulo">Mis reservas</h1>
+      <p class="cx-meta">Solicitudes de cómputo y su estado de aprobación.</p>
+    </header>
 
-    <ion-buttons slot="end">
-      <ion-button class="refresh-btn" (click)="cargarReservasUsuario()" title="Actualizar">
-        <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content class="login-fondo">
-  <div class="main-wrapper">
-
-    <!-- 3 Tarjetas métricas semanales (Semana pasada | Esta semana | Siguiente semana) -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <span class="stat-num">{{ reservasSemanaPasada }}</span>
-        <span class="stat-label">Semana pasada</span>
-      </div>
-
-      <div class="stat-card destacada">
-        <span class="stat-num">{{ reservasEstaSemana }}</span>
-        <span class="stat-label">Esta semana</span>
+    <div class="cx-cuerpo">
+      <div class="cx-resumen">
+        <div class="cx-metrica">
+          <strong>{{ resumen().activas }} / {{ resumen().limite }}</strong>
+          <span>Activas</span>
+        </div>
+        <div class="cx-metrica alerta">
+          <strong>{{ resumen().porVencer }}</strong>
+          <span>En 48 h</span>
+        </div>
+        <div class="cx-metrica">
+          <strong>{{ resumen().pendientes }}</strong>
+          <span>En espera</span>
+        </div>
       </div>
 
-      <div class="stat-card">
-        <span class="stat-num">{{ reservasSiguienteSemana }}</span>
-        <span class="stat-label">Siguiente semana</span>
-      </div>
-    </div>
+      @if (creada()) {
+      <p class="cx-mensaje exito">Solicitud {{ creada() }} enviada. Te avisaremos cuando el encargado la revise.</p>
+      } @if (mensaje()) {
+      <p class="cx-mensaje exito">{{ mensaje() }}</p>
+      } @if (error()) {
+      <p class="cx-mensaje error">{{ error() }}</p>
+      } @if (cargando()) {
+      <p class="cx-cargando">Cargando tus reservas…</p>
+      }
 
-    <!-- Encabezado de sección -->
-    <div class="section-header">
-      <span class="section-sub">TODAS MIS RESERVAS</span>
-      <span class="badge-total">{{ reservas.length }} total</span>
-    </div>
+      <section class="cx-seccion">
+        <p class="cx-etiqueta">Próximas reservas</p>
 
-    <!-- Listado de reservas -->
-    @if (cargando) {
-      <div class="empty-state">
-        <p>Consultando reservas en la base de datos...</p>
-      </div>
-    } @else {
-      <div class="lista-reservas">
-        @for (r of reservas; track r._id || r.turno || $index) {
-          <div class="item-card" [class.destacada-card]="r.estado.toLowerCase() === 'pendiente'">
-            <div class="card-top">
-              <div class="item-info">
-                <div class="icon-box">#{{ r.turno || ($index + 1) }}</div>
-                <div class="item-text">
-                  <h4 class="item-title">{{ r.nombreRecurso }} ({{ r.codigoRecurso }})</h4>
-                  <p class="item-subtitle">{{ r.ubicacion }} · Matrícula: {{ r.solicitante }}</p>
-                  <p class="item-subtitle">{{ r.fecha }} · {{ r.horaInicio }} – {{ r.horaFin }}</p>
-                  @if (r.motivo) {
-                    <p class="item-subtitle">Motivo: {{ r.motivo }}</p>
-                  }
-                </div>
-              </div>
-
-              <span
-                class="badge-estado"
-                [class.aprobada]="r.estado.toLowerCase() === 'aprobada' || r.estado.toLowerCase() === 'atendida'"
-                [class.pendiente]="r.estado.toLowerCase() === 'pendiente'"
-                [class.rechazada]="r.estado.toLowerCase() === 'rechazada' || r.estado.toLowerCase() === 'cancelada'"
-              >
-                {{ r.estado }}
-              </span>
+        @for (reserva of proximas(); track reserva.id) {
+        <article class="nx-tarjeta cx-reserva">
+          <div class="cx-lab-fila">
+            <div>
+              <strong>{{ reserva.recursoNombre }}</strong>
+              <p class="nx-gris">{{ reserva.folio }}</p>
             </div>
+            <span class="cx-badge" [class]="'cx-badge ' + claseEstado(reserva.estado)"> {{ reserva.estado }} </span>
+          </div>
 
-            @if (r.estado.toLowerCase() === 'pendiente') {
-              <div class="card-actions">
-                <button type="button" class="btn-cancelar-res" (click)="cambiarEstado(r, 'Rechazada')">
-                  Cancelar reserva
-                </button>
-              </div>
-            }
+          <p class="cx-lab-detalle">{{ fechaDe(reserva) }} · {{ reserva.horaInicio }} – {{ reserva.horaFin }}</p>
+          <p class="cx-lab-detalle">{{ reserva.motivo }}</p>
+
+          @if (reserva.estado === 'rechazada' && reserva.motivoRechazo) {
+          <p class="cx-mensaje error">Motivo: {{ reserva.motivoRechazo }}</p>
+          }
+
+          <div class="cx-reserva-pie">
+            <span class="cx-gris-chico">
+              <ion-icon name="time-outline"></ion-icon>
+              {{ reserva.estado === 'pendiente' ? 'Esperando aprobación' : 'Confirmada' }}
+            </span>
+            <button
+              type="button"
+              class="nx-boton-sec cx-peligro"
+              [disabled]="cancelando() === reserva.id"
+              (click)="cancelar(reserva)"
+            >
+              {{ cancelando() === reserva.id ? 'Cancelando…' : 'Cancelar reserva' }}
+            </button>
           </div>
-        } @empty {
-          <div class="empty-state">
-            <p>Aún no tienes reservas registradas en tu cuenta.</p>
+        </article>
+        } @empty { @if (!cargando() && !error()) {
+        <p class="cx-vacio">No tienes reservas próximas. Elige un laboratorio en el catálogo.</p>
+        } }
+      </section>
+
+      @if (historial().length > 0) {
+      <section class="cx-seccion">
+        <p class="cx-etiqueta">Historial</p>
+        @for (reserva of historial(); track reserva.id) {
+        <article class="nx-tarjeta cx-reserva cx-historial">
+          <div class="cx-lab-fila">
+            <div>
+              <strong>{{ reserva.recursoNombre }}</strong>
+              <p class="nx-gris">{{ fechaDe(reserva) }} · {{ reserva.horaInicio }} – {{ reserva.horaFin }}</p>
+            </div>
+            <span class="cx-badge" [class]="'cx-badge ' + claseEstado(reserva.estado)"> {{ reserva.estado }} </span>
           </div>
+          @if (reserva.motivoRechazo) {
+          <p class="cx-gris-chico">Motivo: {{ reserva.motivoRechazo }}</p>
+          }
+        </article>
         }
-      </div>
-    }
-
+      </section>
+      }
+    </div>
   </div>
 </ion-content>
 
-<ion-footer class="ion-no-border footer-wrapper">
-  <nav class="nx-barra">
-    <a routerLink="/inicio" routerLinkActive="activa" [routerLinkActiveOptions]="{ exact: true }">
-      <ion-icon name="home-outline"></ion-icon>
-      <span>Inicio</span>
-    </a>
-    <a routerLink="/catalogo" routerLinkActive="activa">
-      <ion-icon name="grid-outline"></ion-icon>
-      <span>Catálogo</span>
-    </a>
-    <a routerLink="/mis-reservas" routerLinkActive="activa">
-      <ion-icon name="receipt-outline"></ion-icon>
-      <span>Mis Reservas</span>
-    </a>
-    <a routerLink="/reportes" routerLinkActive="activa">
-      <ion-icon name="alert-circle-outline"></ion-icon>
-      <span>Reportar</span>
-    </a>
-  </nav>
+<ion-footer class="ion-no-border">
+  <app-nav-inferior tipo="estudiante" />
 </ion-footer>
