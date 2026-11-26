@@ -21,127 +21,75 @@
     <!-- Filtro rápido -->
     <div class="item-card filtro-card">
       <div class="filtro-header">
-        <span class="form-label mb-0">Pendientes de aprobación</span>
-        <span class="badge-total">{{ pendientesFiltradas().length }} total</span>
+        <label class="form-label mb-0">Todas las solicitudes (Más antiguas primero)</label>
+        <span class="badge-total">{{ reservasFiltradas.length }} total</span>
       </div>
 
       <div class="filtro-row">
         <input
           type="text"
           class="form-control"
-          placeholder="Filtrar por solicitante, recurso o folio..."
-          [value]="filtroTexto()"
-          (input)="cambiarFiltro($event)"
+          placeholder="Filtrar por matrícula, recurso o estado..."
+          [(ngModel)]="filtroTexto"
+          (input)="aplicarFiltro()"
         />
-        <button type="button" class="btn-actualizar" (click)="cargar()">
+        <button type="button" class="btn-actualizar" (click)="cargarTodasLasReservas()">
           <ion-icon name="refresh-outline"></ion-icon>
           <span>Actualizar</span>
         </button>
       </div>
     </div>
 
-    @if (mensaje()) {
-      <p class="cx-mensaje exito">{{ mensaje() }}</p>
-    }
-    @if (error()) {
-      <p class="cx-mensaje error">{{ error() }}</p>
-    }
-
-    <!-- Solicitudes pendientes -->
-    @if (cargando()) {
+    <!-- Listado completo ordenado FIFO -->
+    @if (cargando) {
       <div class="empty-state">
-        <p>Cargando solicitudes...</p>
+        <p>Cargando solicitudes desde la base de datos...</p>
       </div>
     } @else {
       <div class="lista-reservas">
-        @for (reserva of pendientesFiltradas(); track reserva.id; let i = $index) {
+        @for (r of reservasFiltradas; track r._id || $index; let i = $index) {
           <div class="item-card reserva-item">
             <div class="reserva-top">
               <div class="reserva-info">
                 <div class="icon-box">#{{ i + 1 }}</div>
                 <div class="reserva-text">
-                  <h4 class="item-title">{{ reserva.recursoNombre }}</h4>
-                  <p class="item-subtitle">Solicitante: <strong>{{ reserva.usuarioNombre }}</strong> · {{ reserva.folio }}</p>
-                  <p class="item-subtitle">{{ fechaDe(reserva) }} · {{ reserva.horaInicio }} – {{ reserva.horaFin }}</p>
+                  <h4 class="item-title">{{ r.nombreRecurso }} ({{ r.codigoRecurso }})</h4>
+                  <p class="item-subtitle">Solicitante: <strong>{{ r.solicitante }}</strong> · {{ r.ubicacion }}</p>
+                  <p class="item-subtitle">{{ r.fecha }} · {{ r.horaInicio }} – {{ r.horaFin }}</p>
                 </div>
               </div>
-              <span class="badge-estado">{{ reserva.estado }}</span>
+              <span
+                class="badge-estado"
+                [class.aprobada]="r.estado.toLowerCase() === 'aprobada'"
+                [class.rechazada]="r.estado.toLowerCase() === 'rechazada'"
+              >
+                {{ r.estado }}
+              </span>
             </div>
 
-            @if (reserva.motivo) {
+            @if (r.motivo) {
               <div class="motivo-box">
-                <p class="item-subtitle mb-0"><strong>Motivo:</strong> {{ reserva.motivo }}</p>
+                <p class="item-subtitle mb-0"><strong>Motivo:</strong> {{ r.motivo }}</p>
               </div>
             }
 
-            <div class="acciones-grid">
-              <button
-                type="button"
-                class="btn-rechazar"
-                [disabled]="procesando() === reserva.id"
-                (click)="rechazar(reserva)"
-              >
-                Rechazar
-              </button>
-              <button
-                type="button"
-                class="btn-aprobar"
-                [disabled]="procesando() === reserva.id"
-                (click)="aprobar(reserva)"
-              >
-                Aprobar
-              </button>
-            </div>
-          </div>
-        } @empty {
-          @if (!error()) {
-            <div class="empty-state">
-              <p>No hay solicitudes pendientes.</p>
-            </div>
-          }
-        }
-      </div>
-
-      <!-- Estado de los laboratorios -->
-      @if (laboratorios().length > 0) {
-        <div class="item-card filtro-card">
-          <div class="filtro-header">
-            <span class="form-label mb-0">Estado de los laboratorios</span>
-            <span class="badge-total">{{ laboratorios().length }}</span>
-          </div>
-        </div>
-
-        <div class="lista-reservas">
-          @for (laboratorio of laboratorios(); track laboratorio.codigo) {
-            <div class="item-card reserva-item">
-              <div class="reserva-top">
-                <div class="reserva-text">
-                  <h4 class="item-title">{{ laboratorio.nombre }}</h4>
-                  <p class="item-subtitle">{{ laboratorio.equipos }} equipos · {{ laboratorio.ubicacion }}</p>
-                </div>
-                <span
-                  class="badge-estado"
-                  [class.aprobada]="laboratorio.estado === 'Disponible'"
-                  [class.rechazada]="laboratorio.estado !== 'Disponible'"
-                >
-                  {{ laboratorio.estado }}
-                </span>
-              </div>
-              <div class="acciones-grid una-accion">
-                <button
-                  type="button"
-                  [class.btn-rechazar]="laboratorio.estado === 'Disponible'"
-                  [class.btn-aprobar]="laboratorio.estado !== 'Disponible'"
-                  [disabled]="procesando() === laboratorio.codigo"
-                  (click)="alternarEstado(laboratorio)"
-                >
-                  {{ laboratorio.estado === 'Disponible' ? 'Enviar a mantenimiento' : 'Marcar disponible' }}
+            @if (r.estado.toLowerCase() === 'pendiente') {
+              <div class="acciones-grid">
+                <button type="button" class="btn-rechazar" (click)="cambiarEstado(r, 'Rechazada')">
+                  Rechazar
+                </button>
+                <button type="button" class="btn-aprobar" (click)="cambiarEstado(r, 'Aprobada')">
+                  Aprobar
                 </button>
               </div>
-            </div>
-          }
-        </div>
-      }
+            }
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <p>No hay reservas registradas en la base de datos.</p>
+          </div>
+        }
+      </div>
     }
   </div>
 </ion-content>
@@ -152,9 +100,13 @@
       <ion-icon name="home-outline"></ion-icon>
       <span>Inicio</span>
     </a>
-    <a routerLink="/nuevo-recurso" routerLinkActive="activa">
-      <ion-icon name="add-circle-outline"></ion-icon>
-      <span>Recurso</span>
+    <a routerLink="/admin-recursos" routerLinkActive="activa">
+      <ion-icon name="cube-outline"></ion-icon>
+      <span>Recursos</span>
+    </a>
+    <a routerLink="/escanear" routerLinkActive="activa">
+      <ion-icon name="scan-outline"></ion-icon>
+      <span>Escanear</span>
     </a>
     <a routerLink="/gestion-reservas" routerLinkActive="activa">
       <ion-icon name="document-text-outline"></ion-icon>

@@ -22,7 +22,7 @@
     </div>
 
     <!-- Zona de cámara con esquinas tipo escáner QR -->
-    <div class="camara">
+    <div class="camara" (click)="escanearConCamara()" role="button" aria-label="Escanear QR con la cámara">
       <div class="marco">
         <span class="esquina tl"></span>
         <span class="esquina tr"></span>
@@ -31,9 +31,14 @@
         <ion-icon name="qr-code-outline"></ion-icon>
       </div>
       <p>
-        {{ recurso ? 'Código ' + recurso.codigo + ' detectado' : 'Apunta la cámara al código del recurso' }}
+        {{ recurso ? 'Código ' + recurso.codigo + ' detectado' : 'Toca aquí para escanear el QR del recurso' }}
       </p>
     </div>
+
+    <button type="button" class="nx-boton boton-camara" [disabled]="escaneando" (click)="escanearConCamara()">
+      <ion-icon name="camera-outline"></ion-icon>
+      {{ escaneando ? 'Abriendo cámara...' : 'Escanear con la cámara' }}
+    </button>
 
     <!-- Código escrito a mano -->
     <div class="buscar">
@@ -54,6 +59,9 @@
     <!-- Resultado -->
     @if (recurso) {
       <div class="nx-tarjeta resultado">
+        @if (recurso.foto) {
+          <img class="resultado-foto" [src]="recurso.foto" [alt]="recurso.nombre" />
+        }
         <div class="resultado-header">
           <div class="resultado-titulo">
             <strong>{{ recurso.nombre }}</strong>
@@ -83,7 +91,7 @@
           </div>
         }
 
-        <button type="button" class="nx-boton" (click)="registrar()">
+        <button type="button" class="nx-boton" [disabled]="procesando" (click)="registrar()">
           {{ modo === 'prestamo' ? 'Registrar préstamo' : 'Registrar devolución' }}
         </button>
       </div>
@@ -98,17 +106,21 @@
       <ion-icon name="home-outline"></ion-icon>
       <span>Inicio</span>
     </a>
-    <a routerLink="/catalogo" routerLinkActive="activa">
-      <ion-icon name="grid-outline"></ion-icon>
-      <span>Catálogo</span>
+    <a routerLink="/admin-recursos" routerLinkActive="activa">
+      <ion-icon name="cube-outline"></ion-icon>
+      <span>Recursos</span>
     </a>
     <a routerLink="/escanear" routerLinkActive="activa">
       <ion-icon name="scan-outline"></ion-icon>
       <span>Escanear</span>
     </a>
-    <a routerLink="/reportes" routerLinkActive="activa">
-      <ion-icon name="alert-circle-outline"></ion-icon>
-      <span>Reportar</span>
+    <a routerLink="/gestion-reservas" routerLinkActive="activa">
+      <ion-icon name="document-text-outline"></ion-icon>
+      <span>Gestión</span>
+    </a>
+    <a routerLink="/registros" routerLinkActive="activa">
+      <ion-icon name="checkmark-done-outline"></ion-icon>
+      <span>Aprobadas</span>
     </a>
   </nav>
 </ion-footer>

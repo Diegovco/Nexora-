@@ -351,25 +351,3 @@ ion-toolbar {
     cursor: not-allowed;
   }
 }
-
-/* ==================== AJUSTES PARA LA API (api-python) ==================== */
-.area-motivo {
-  min-height: 88px;
-  resize: none;
-  font-family: inherit;
-}
-
-.dia-card:disabled {
-  opacity: 0.45;
-}
-
-.slot-btn.no-disponible,
-.cuadro.no-disponible {
-  background: #0f1a2b;
-  border-color: #1b3248;
-  color: #5e7085;
-}
-
-.btn-solicitar:disabled {
-  opacity: 0.5;
-}

@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from flask import jsonify
 from bson import ObjectId
@@ -13,7 +14,7 @@ from BackEnd.Structures.pila_historial import PilaHistorial
 # Conexión e inicialización de BD y colecciones
 if ColabsKey.dbconn is None:
     try:
-        mongoConnect = MongoClient(ColabsKey.strConnection, serverSelectionTimeoutMS=2000)
+        mongoConnect = MongoClient(ColabsKey.strConnection, serverSelectionTimeoutMS=10000)
         # Forzar una petición rápida de ping para verificar la conexión
         mongoConnect.admin.command('ping')
         ColabsKey.dbconn = mongoConnect[ColabsKey.strBDConnection]
@@ -57,8 +58,41 @@ def fnGetUsers():
 
 def fnInsertUser(objUser):
     try:
-        resultado = dbUsers.insert_one(objUser)
-        return jsonify({"_id": str(resultado.inserted_id)}), 201
+        strCorreo = str(objUser.get("strcorreoUsuario", "")).strip().lower()
+        strMatricula = str(objUser.get("strmatricula", "")).strip()
+        strClave = str(objUser.get("strclaveAdmin", "")).strip()
+
+        # Correo con forma válida: algo@algo.algo
+        if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", strCorreo):
+            return jsonify({"error": "Correo inválido"}), 400
+
+        if strMatricula == "":
+            return jsonify({"error": "La matrícula es obligatoria"}), 400
+
+        if fnBuscarUsuarioPorCorreo(strCorreo):
+            return jsonify({"error": "El correo ya está registrado"}), 409
+
+        # El ROL lo decide el servidor, nunca la app:
+        # - sin clave            -> Estudiante
+        # - clave correcta       -> Administrativo
+        # - clave incorrecta     -> se rechaza el registro
+        strRol = "Estudiante"
+        if strClave != "":
+            if ColabsKey.strClaveAdmin == "" or strClave != ColabsKey.strClaveAdmin:
+                return jsonify({"error": "Clave de administrador incorrecta"}), 403
+            strRol = "Administrativo"
+
+        nuevo = {
+            "strnombreUsuario": str(objUser.get("strnombreUsuario", "")).strip(),
+            "strapellidoUsuario": str(objUser.get("strapellidoUsuario", "")).strip(),
+            "strmatricula": strMatricula,
+            "strcorreoUsuario": strCorreo,
+            "strrol": strRol,
+            "strwebsite": str(objUser.get("strwebsite", "")),
+            "strcontrasena": str(objUser.get("strcontrasena", ""))
+        }
+        resultado = dbUsers.insert_one(nuevo)
+        return jsonify({"_id": str(resultado.inserted_id), "strrol": strRol}), 201
     except Exception as e:
         print("Error en fnInsertUser:", e)
         return jsonify(Messages.err500)
@@ -68,7 +102,8 @@ def fnUpdateUser(strId, objCambios):
     if not ObjectId.is_valid(strId):
         return jsonify({"error": "ID Inválido"}), 400
 
-    camposPermitidos = {"strnombreUsuario", "strcorreoUsuario", "strmatricula", "strrol", "strwebsite", "strcontrasena"}
+    # "strrol" NO está permitido: el rol solo se asigna al registrarse con la clave de administrador
+    camposPermitidos = {"strnombreUsuario", "strcorreoUsuario", "strmatricula", "strwebsite", "strcontrasena"}
     cambios = {k: v for k, v in objCambios.items() if k in camposPermitidos}
 
     if not cambios:
@@ -97,9 +132,15 @@ def fnDeleteUser(strId):
     return jsonify({"eliminados": resultado.deleted_count}), 200
 
 
+def fnBuscarUsuarioPorCorreo(strCorreo):
+    # Busca el correo sin importar mayúsculas/minúsculas (Diego@Gmail.com = diego@gmail.com)
+    strPatron = "^" + re.escape(str(strCorreo).strip()) + "$"
+    return dbUsers.find_one({"strcorreoUsuario": {"$regex": strPatron, "$options": "i"}})
+
+
 def fnGetUserByEmail(strCorreo):
     try:
-        objUser = dbUsers.find_one({"strcorreoUsuario": strCorreo})
+        objUser = fnBuscarUsuarioPorCorreo(strCorreo)
         if not objUser:
             return jsonify({"error": "Usuario no encontrado"}), 404
         
@@ -227,6 +268,17 @@ def fnDeshacerUltimoMovimiento():
 # RECURSOS (CRUD EN MONGODB)
 # ==============================================================================
 
+def fnValidarFoto(strFoto):
+    # La foto llega como texto base64 (data:image/jpeg;base64,...).
+    # Se acepta solo si es una imagen y no pesa más de ~1.5 MB.
+    strFoto = str(strFoto or "")
+    if strFoto == "":
+        return ""
+    if not strFoto.startswith("data:image/") or len(strFoto) > 2000000:
+        return ""
+    return strFoto
+
+
 def fnGetRecursos():
     if dbRecursos is None:
         return jsonify({"error": "Sin conexión a MongoDB"}), 503
@@ -242,7 +294,9 @@ def fnGetRecursos():
                 "categoria": objRec.get("categoria", ""),
                 "ubicacion": objRec.get("ubicacion", ""),
                 "estado": objRec.get("estado", "Disponible"),
-                "descripcion": objRec.get("descripcion", "")
+                "cantidad": objRec.get("cantidad", 1),
+                "descripcion": objRec.get("descripcion", ""),
+                "foto": objRec.get("foto", "")
             })
 
         objResponse = Messages.succ200.copy()
@@ -263,7 +317,9 @@ def fnInsertRecurso(objRecurso):
             "categoria": objRecurso.get("categoria", ""),
             "ubicacion": objRecurso.get("ubicacion", ""),
             "estado": objRecurso.get("estado", "Disponible"),
-            "descripcion": objRecurso.get("descripcion", "")
+            "cantidad": int(objRecurso.get("cantidad", 1) or 1),
+            "descripcion": objRecurso.get("descripcion", ""),
+            "foto": fnValidarFoto(objRecurso.get("foto", ""))
         }
         resultado = dbRecursos.insert_one(nuevo)
         return jsonify({"_id": str(resultado.inserted_id)}), 201
@@ -276,8 +332,10 @@ def fnUpdateRecurso(strId, objCambios):
     if dbRecursos is None:
         return jsonify({"error": "Sin conexión a MongoDB"}), 503
     try:
-        camposPermitidos = {"codigo", "nombre", "categoria", "ubicacion", "estado", "descripcion"}
+        camposPermitidos = {"codigo", "nombre", "categoria", "ubicacion", "estado", "cantidad", "descripcion", "foto"}
         cambios = {k: v for k, v in objCambios.items() if k in camposPermitidos}
+        if "foto" in cambios:
+            cambios["foto"] = fnValidarFoto(cambios["foto"])
 
         if not cambios:
             return jsonify({"error": "No hay campos válidos para actualizar"}), 400

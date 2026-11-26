@@ -1,9 +1,5 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://tu-servidor.example.com/api',
-  usuario: {
-    id: 'demo-001',
-    nombre: 'Ana Ruiz',
-  },
-  adminApiKey: '',
+  // Cuando publiques la API Flask (Render, Railway...), pon aquí su dirección.
+  apiUrl: 'https://TU-API-PUBLICADA.com',
 };

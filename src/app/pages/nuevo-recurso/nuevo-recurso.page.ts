@@ -1,82 +1,117 @@
-import type { OnInit} from '@angular/core';
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonContent, IonFooter, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { chevronBackOutline, qrCodeOutline } from 'ionicons/icons';
-
-import type { CategoriaRecurso, Horario } from '../../models/computo.model';
-import { mensajeDeError } from '../../services/api-errores';
+import {
+  cameraOutline,
+  chevronBackOutline,
+  closeOutline,
+  downloadOutline,
+  imagesOutline,
+  qrCodeOutline,
+} from 'ionicons/icons';
+import { EtiquetaQrService } from '../../services/etiqueta-qr.service';
+import { FotoService } from '../../services/foto.service';
 import { RecursosService } from '../../services/recursos.service';
-
-const HORARIO_PREDETERMINADO: Horario = { inicio: '07:00', fin: '20:00', duracionBloque: 60 };
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-nuevo-recurso',
   templateUrl: './nuevo-recurso.page.html',
   styleUrls: ['./nuevo-recurso.page.scss'],
   standalone: true,
-  imports: [IonContent, IonFooter, IonIcon, FormsModule],
+  imports: [IonContent, IonFooter, IonIcon, FormsModule]
 })
 export class NuevoRecursoPage implements OnInit {
+  private apiUrl = environment.apiUrl;
+  recursoId = '';
   editando = false;
-  guardando = false;
   codigoVista = '';
 
   nombre = '';
-  categoria: CategoriaRecurso = 'Equipo AV';
+  categoria = 'Equipo AV';
   ubicacion = 'Almacén AV';
   cantidad = 1;
   descripcion = '';
+  // Al editar se conserva el estado actual (Prestado, Mantenimiento...)
+  estado = 'Disponible';
 
-  categorias: CategoriaRecurso[] = ['Laboratorio', 'Libro', 'Equipo AV'];
+  foto = '';         // Foto del recurso (texto base64), vacía si no tiene
+  etiquetaQr = '';   // Imagen de la etiqueta QR para imprimir
+  guardado = false;  // true cuando ya se guardó y se muestra el QR
+  guardando = false;
+
+  // Recursos que ya existen en la base de datos (para no repetir códigos)
+  recursosBD: any[] = [];
+
+  categorias = ['Laboratorio', 'Libro', 'Equipo AV'];
   ubicaciones = ['Almacén AV', 'Biblioteca', 'Edificio B', 'Edificio C'];
 
-  private readonly recursosService = inject(RecursosService);
-  private readonly router = inject(Router);
-  private readonly route = inject(ActivatedRoute);
-  // La app no usa zone.js: hay que avisar a Angular cuando llegan datos de la API.
-  private readonly cdr = inject(ChangeDetectorRef);
-
-  constructor() {
-    addIcons({ chevronBackOutline, qrCodeOutline });
+  constructor(
+    private recursosService: RecursosService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private http: HttpClient,
+    // La app no usa zone.js: hay que avisar a Angular cuando llegan datos de la API.
+    private cdr: ChangeDetectorRef,
+    private etiquetaQrService: EtiquetaQrService,
+    private fotoService: FotoService
+  ) {
+    addIcons({ cameraOutline, chevronBackOutline, closeOutline, downloadOutline, imagesOutline, qrCodeOutline });
   }
 
-  ngOnInit(): void {
+  ngOnInit() {
+    const id = this.route.snapshot.queryParamMap.get('id');
     const codigo = this.route.snapshot.queryParamMap.get('codigo');
 
-    this.recursosService.listar().subscribe({
-      next: (lista) => {
-        if (codigo) {
-          const encontrado = lista.find((recurso) => recurso.codigo === codigo);
-          if (encontrado) {
+    this.http.get<any>(`${this.apiUrl}/getRecursos`).subscribe({
+      next: (resp) => {
+        const lista = Array.isArray(resp) ? resp : (resp?.Respuesta || []);
+        this.recursosBD = lista;
+
+        if (id || codigo) {
+          const r = lista.find((item: any) =>
+            (id && item._id === id) || (codigo && item.codigo === codigo)
+          );
+          if (r) {
             this.editando = true;
-            this.codigoVista = encontrado.codigo;
-            this.nombre = encontrado.nombre;
-            this.categoria = encontrado.categoria;
-            this.ubicacion = encontrado.ubicacion;
-            this.cantidad = encontrado.equipos;
-            this.descripcion = encontrado.descripcion;
-            this.cdr.markForCheck();
+            this.recursoId = r._id || '';
+            this.codigoVista = r.codigo;
+            this.nombre = r.nombre;
+            this.categoria = r.categoria;
+            this.ubicacion = r.ubicacion;
+            this.cantidad = r.cantidad || 1;
+            this.descripcion = r.descripcion || '';
+            this.estado = r.estado || 'Disponible';
+            this.foto = r.foto || '';
+            this.cdr.detectChanges();
+            // Al editar se muestra su QR para poder reimprimirlo
+            this.mostrarQr();
             return;
           }
         }
-        this.codigoVista = this.recursosService.generarCodigo(this.categoria, lista);
-        this.cdr.markForCheck();
+
+        // Recurso nuevo: el código sigue al mayor que ya existe en la base de datos
+        this.codigoVista = this.recursosService.generarCodigo(this.categoria, this.recursosBD);
+        this.cdr.detectChanges();
       },
-      error: (error) => alert(mensajeDeError(error)),
+      error: () => {
+        this.codigoVista = this.recursosService.generarCodigo(this.categoria);
+        this.cdr.detectChanges();
+      }
     });
   }
 
-  elegirCategoria(categoria: CategoriaRecurso): void {
-    this.categoria = categoria;
+  elegirCategoria(c: string) {
+    this.categoria = c;
     if (!this.editando) {
-      this.codigoVista = this.recursosService.generarCodigo(categoria);
+      this.codigoVista = this.recursosService.generarCodigo(c, this.recursosBD);
     }
   }
 
-  guardar(): void {
+  guardar() {
     if (this.nombre.trim() === '') {
       alert('Escribe el nombre del recurso');
       return;
@@ -85,59 +120,108 @@ export class NuevoRecursoPage implements OnInit {
       alert('La cantidad debe ser al menos 1');
       return;
     }
-    if (this.guardando) {
-      return;
-    }
+
+    const datosRecurso = {
+      codigo: this.codigoVista,
+      nombre: this.nombre.trim(),
+      categoria: this.categoria,
+      ubicacion: this.ubicacion,
+      estado: this.estado,
+      cantidad: this.cantidad,
+      descripcion: this.descripcion,
+      foto: this.foto
+    };
 
     this.guardando = true;
 
     if (this.editando) {
-      this.recursosService
-        .actualizar(this.codigoVista, {
-          nombre: this.nombre.trim(),
-          ubicacion: this.ubicacion,
-          equipos: this.cantidad,
-          descripcion: this.descripcion,
-        })
-        .subscribe({
-          next: () => {
-            this.guardando = false;
-            alert('Recurso actualizado');
-            this.router.navigateByUrl('/admin-recursos');
-          },
-          error: (error) => {
-            this.guardando = false;
-            alert(mensajeDeError(error));
-          },
-        });
-      return;
-    }
-
-    this.recursosService
-      .crear({
-        codigo: this.codigoVista || undefined,
-        nombre: this.nombre.trim(),
-        categoria: this.categoria,
-        ubicacion: this.ubicacion,
-        estado: 'Disponible',
-        equipos: this.cantidad,
-        horario: { ...HORARIO_PREDETERMINADO },
-        descripcion: this.descripcion,
-      })
-      .subscribe({
+      const identificador = this.recursoId || this.codigoVista;
+      this.http.put(`${this.apiUrl}/recursos/${encodeURIComponent(identificador)}`, datosRecurso).subscribe({
         next: () => {
           this.guardando = false;
-          alert('Recurso guardado con el código ' + this.codigoVista);
+          alert('Recurso actualizado');
           this.router.navigateByUrl('/admin-recursos');
         },
-        error: (error) => {
+        error: () => {
           this.guardando = false;
-          alert(mensajeDeError(error));
-        },
+          this.cdr.detectChanges();
+          alert('Error al actualizar el recurso en la base de datos.');
+        }
       });
+    } else {
+      this.http.post(`${this.apiUrl}/recursos`, datosRecurso).subscribe({
+        next: () => {
+          // Ya se guardó: se muestra su etiqueta QR para imprimirla
+          this.guardando = false;
+          this.guardado = true;
+          this.mostrarQr();
+        },
+        error: () => {
+          this.guardando = false;
+          this.cdr.detectChanges();
+          alert('Error al guardar el recurso en la base de datos.');
+        }
+      });
+    }
   }
 
-  cancelar(): void {
+  cancelar() {
     this.router.navigateByUrl('/admin-recursos');
+  }
+
+  // ---------- Foto ----------
+  async tomarFoto() {
+    const nueva = await this.fotoService.tomarFoto();
+    if (nueva) {
+      this.foto = nueva;
+      this.cdr.detectChanges();
+    }
+  }
+
+  async elegirFoto() {
+    const nueva = await this.fotoService.elegirDeGaleria();
+    if (nueva) {
+      this.foto = nueva;
+      this.cdr.detectChanges();
+    }
+  }
+
+  quitarFoto() {
+    this.foto = '';
+  }
+
+  // ---------- Etiqueta QR ----------
+  async mostrarQr() {
+    this.etiquetaQr = await this.etiquetaQrService.generarEtiqueta(this.codigoVista, this.nombre.trim());
+    this.cdr.detectChanges();
+    if (this.guardado) {
+      // Baja la pantalla hasta la etiqueta para que se vea al guardar
+      setTimeout(() => {
+        const etiqueta = document.querySelector('.nx-tarjeta.etiqueta');
+        if (etiqueta) {
+          etiqueta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    }
+  }
+
+  async descargarQr() {
+    try {
+      await this.etiquetaQrService.guardarOCompartir(this.etiquetaQr, this.codigoVista);
+    } catch {
+      alert('No se pudo guardar la etiqueta QR.');
+    }
+  }
+
+  // Limpia el formulario para registrar otro recurso
+  nuevoOtro() {
+    this.recursosBD.push({ codigo: this.codigoVista });
+    this.guardado = false;
+    this.etiquetaQr = '';
+    this.nombre = '';
+    this.cantidad = 1;
+    this.descripcion = '';
+    this.foto = '';
+    this.codigoVista = this.recursosService.generarCodigo(this.categoria, this.recursosBD);
   }
 }

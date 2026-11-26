@@ -12,20 +12,8 @@ import {
   IonButton
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import {
-  homeOutline,
-  gridOutline,
-  addCircleOutline,
-  scanOutline,
-  receiptOutline,
-  alertCircleOutline,
-  documentTextOutline,
-  checkmarkDoneOutline,
-  shieldCheckmarkOutline,
-  cardOutline,
-  atOutline,
-  logOutOutline
-} from 'ionicons/icons';
+import { homeOutline, gridOutline, addCircleOutline, scanOutline, receiptOutline, alertCircleOutline, documentTextOutline, checkmarkDoneOutline, shieldCheckmarkOutline, cardOutline, atOutline, logOutOutline, cubeOutline } from 'ionicons/icons';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-usuarios',
@@ -46,7 +34,7 @@ import {
   ]
 })
 export class UsuariosPage implements OnInit {
-  private apiUrl = 'http://localhost:5000';
+  private apiUrl = environment.apiUrl;
 
   nombre = '';
   correo = '';
@@ -63,20 +51,7 @@ export class UsuariosPage implements OnInit {
     private cdr: ChangeDetectorRef,
     private zone: NgZone
   ) {
-    addIcons({
-      homeOutline,
-      gridOutline,
-      addCircleOutline,
-      scanOutline,
-      receiptOutline,
-      alertCircleOutline,
-      documentTextOutline,
-      checkmarkDoneOutline,
-      shieldCheckmarkOutline,
-      cardOutline,
-      atOutline,
-      logOutOutline
-    });
+    addIcons({ homeOutline, gridOutline, addCircleOutline, scanOutline, receiptOutline, alertCircleOutline, documentTextOutline, checkmarkDoneOutline, shieldCheckmarkOutline, cardOutline, atOutline, logOutOutline, cubeOutline });
   }
 
   ngOnInit() {
@@ -117,7 +92,7 @@ export class UsuariosPage implements OnInit {
         this.correo = String(datos.strcorreoUsuario || datos.correo || datos.email || '').trim();
         this.matricula = String(datos.strmatricula || datos.matricula || '').trim();
         this.rol = String(datos.strrol || datos.rol || '').trim();
-        this.esEstudiante = !(this.rol === 'Administrativo' || this.correo.toUpperCase().startsWith('A'));
+        this.esEstudiante = this.rol !== 'Administrativo';
       } catch {}
     }
 
@@ -134,7 +109,7 @@ export class UsuariosPage implements OnInit {
                 if (nombreSrv) this.nombre = nombreSrv;
                 this.matricula = String(u.strmatricula || u.matricula || this.matricula).trim();
                 this.rol = String(u.strrol || u.rol || this.rol).trim();
-                this.esEstudiante = !(this.rol === 'Administrativo' || this.correo.toUpperCase().startsWith('A'));
+                this.esEstudiante = this.rol !== 'Administrativo';
 
                 const actualizado = {
                   ...u,

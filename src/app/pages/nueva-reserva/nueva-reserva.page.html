@@ -1,7 +1,7 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button class="back-btn" (click)="volver()" title="Volver">
+      <ion-button class="back-btn" routerLink="/inicio" title="Volver">
         <ion-icon name="chevron-back-outline" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -12,122 +12,103 @@
   <div class="main-wrapper">
     <!-- Cabecera del recurso seleccionado -->
     <div class="recurso-hero">
-      @if (recurso(); as laboratorio) {
-        <span class="badge-estado" [class.ocupado]="laboratorio.estado !== 'Disponible'">
-          {{ laboratorio.estado }}
-        </span>
-      }
-      <h1 class="recurso-titulo">{{ recurso()?.nombre || 'Cargando recurso...' }}</h1>
-      @if (recurso(); as laboratorio) {
-        <p class="recurso-subtitulo">
-          {{ laboratorio.ubicacion }} · {{ laboratorio.codigo }}
-          @if (laboratorio.equipos) { · {{ laboratorio.equipos }} equipos }
-        </p>
-      }
+      <span class="badge-estado" [class.ocupado]="recurso.estado !== 'Disponible'">
+        {{ recurso.estado || 'Disponible' }}
+      </span>
+      <h1 class="recurso-titulo">{{ recurso.nombre || 'Cargando recurso...' }}</h1>
+      <p class="recurso-subtitulo">
+        {{ recurso.ubicacion || 'Campus UTC' }}
+        @if (recurso.codigo) { · {{ recurso.codigo }} }
+        @if (recurso.categoria) { · {{ recurso.categoria }} }
+      </p>
     </div>
 
-    <!-- Solicitante -->
+    <!-- Solicitante cargado automáticamente -->
     <div class="solicitante-pill">
       <span class="solicitante-label">Solicitante:</span>
-      <strong class="solicitante-valor">{{ solicitante }}</strong>
+      @if (solicitanteBloqueado) {
+        <strong class="solicitante-valor">{{ solicitante }}</strong>
+      } @else {
+        <input
+          type="text"
+          class="solicitante-inline-input"
+          placeholder="Escribe tu nombre o matrícula"
+          [(ngModel)]="solicitante"
+        />
+      }
     </div>
 
-    @if (cargando()) {
-      <p class="nota-reglas">Cargando horarios...</p>
-    }
-    @if (error()) {
-      <p class="cx-mensaje error">{{ error() }}</p>
-    }
-    @if (motivoBloqueo()) {
-      <p class="cx-mensaje info">{{ motivoBloqueo() }}</p>
-    }
+    <!-- Selector de día escolar (Lun - Vie) -->
+    <div class="seccion-bloque">
+      <label class="seccion-label">Elige el día</label>
+      <div class="dias-grid">
+        @for (d of diasDisponibles; track d.fechaISO) {
+          <button
+            type="button"
+            class="dia-card"
+            [class.activo]="fecha === d.fechaISO"
+            (click)="seleccionarDia(d)"
+          >
+            <span class="dia-nombre">{{ d.diaCorto }}</span>
+            <span class="dia-numero">{{ d.numeroDia }}</span>
+          </button>
+        }
+      </div>
+    </div>
 
-    @if (!cargando() && recurso()) {
-      <!-- Selector de día -->
-      <div class="seccion-bloque">
-        <span class="seccion-label">Elige el día</span>
-        <div class="dias-grid">
-          @for (dia of dias(); track dia.fecha) {
-            <button
-              type="button"
-              class="dia-card"
-              [class.activo]="dia.fecha === fecha()"
-              [disabled]="!dia.disponible"
-              (click)="cambiarDia(dia)"
-            >
-              <span class="dia-nombre">{{ dia.dia }}</span>
-              <span class="dia-numero">{{ dia.numero }}</span>
-            </button>
-          }
-        </div>
+    <!-- Horario escolar (07:00 - 15:00) -->
+    <div class="seccion-bloque">
+      <div class="horario-header">
+        <label class="seccion-label m-0">Horario</label>
+        <span class="fecha-larga">{{ fechaLargaSeleccionada }}</span>
       </div>
 
-      <!-- Horario -->
-      <div class="seccion-bloque">
-        <div class="horario-header">
-          <span class="seccion-label m-0">Horario</span>
-          <span class="fecha-larga">{{ etiquetaFecha() }}</span>
-        </div>
-
-        <div class="horas-slots-grid">
-          @for (slot of slots(); track slot.hora) {
-            <button
-              type="button"
-              class="slot-btn"
-              [class.seleccionado]="claseSlot(slot) === 'seleccionado'"
-              [class.ocupado]="slot.estado === 'ocupado'"
-              [class.no-disponible]="slot.estado !== 'libre' && slot.estado !== 'ocupado'"
-              [disabled]="deshabilitado(slot)"
-              [attr.aria-label]="'Bloque ' + slot.hora + ' ' + slot.estado"
-              (click)="alternar(slot)"
-            >
-              {{ slot.hora }}
-            </button>
-          }
-        </div>
-
-        <!-- Leyenda -->
-        <div class="leyenda-row">
-          <div class="leyenda-item">
-            <span class="cuadro seleccionado"></span>
-            <span>Seleccionado</span>
-          </div>
-          <div class="leyenda-item">
-            <span class="cuadro libre"></span>
-            <span>Libre</span>
-          </div>
-          <div class="leyenda-item">
-            <span class="cuadro ocupado"></span>
-            <span>Ocupado</span>
-          </div>
-          <div class="leyenda-item">
-            <span class="cuadro no-disponible"></span>
-            <span>No disponible</span>
-          </div>
-        </div>
+      <div class="horas-slots-grid">
+        @for (slot of slotsHorario; track slot.hora) {
+          <button
+            type="button"
+            class="slot-btn"
+            [class.seleccionado]="slot.seleccionado"
+            [class.ocupado]="slot.ocupado"
+            [disabled]="slot.ocupado"
+            (click)="toggleSlot(slot)"
+          >
+            {{ slot.hora }}
+          </button>
+        }
       </div>
 
-      <!-- Motivo -->
-      <div class="seccion-bloque">
-        <label class="seccion-label" for="motivoInput">Motivo de la reserva</label>
-        <textarea
-          id="motivoInput"
-          class="form-control area-motivo"
-          rows="3"
-          maxlength="140"
-          placeholder="Ej. Práctica de Estructura de Datos"
-          [value]="motivo()"
-          (input)="cambiarMotivo($event)"
-        ></textarea>
-        <p class="nota-reglas">
-          Se revisa con 24 h de anticipación. El encargado confirma tu solicitud y te avisamos.
-        </p>
+      <!-- Leyenda -->
+      <div class="leyenda-row">
+        <div class="leyenda-item">
+          <span class="cuadro seleccionado"></span>
+          <span>Seleccionado</span>
+        </div>
+        <div class="leyenda-item">
+          <span class="cuadro libre"></span>
+          <span>Libre</span>
+        </div>
+        <div class="leyenda-item">
+          <span class="cuadro ocupado"></span>
+          <span>Ocupado</span>
+        </div>
       </div>
+    </div>
 
-      @if (aviso()) {
-        <p class="cx-mensaje info">{{ aviso() }}</p>
-      }
-    }
+    <!-- Motivo de la reserva -->
+    <div class="seccion-bloque">
+      <label class="seccion-label" for="motivoInput">Motivo de la reserva</label>
+      <input
+        id="motivoInput"
+        type="text"
+        class="form-control"
+        placeholder="Ej. Práctica de Estructura de Datos"
+        [(ngModel)]="motivo"
+      />
+      <p class="nota-reglas">
+        Los recursos se reservan dentro del horario escolar (07:00 a 16:00). Si no llegas en los primeros 15 minutos, la reserva se cancela.
+      </p>
+    </div>
   </div>
 </ion-content>
 
@@ -136,12 +117,17 @@
     <div class="seleccion-info">
       <span class="seleccion-label">Tu selección</span>
       <strong class="seleccion-rango">
-        {{ seleccion().length ? horaInicio() + ' – ' + horaFin() : 'Elige un horario' }}
+        {{ horaInicio && horaFin ? (horaInicio + ' – ' + horaFin) : 'Elige un horario' }}
       </strong>
     </div>
 
-    <button type="button" class="btn-solicitar" [disabled]="!puedeEnviar()" (click)="enviar()">
-      {{ enviando() ? 'Enviando...' : 'Solicitar reserva' }}
+    <button
+      type="button"
+      class="btn-solicitar"
+      [disabled]="enviando || !horaInicio || !horaFin"
+      (click)="confirmarReserva()"
+    >
+      {{ enviando ? 'Enviando...' : 'Solicitar reserva' }}
     </button>
   </div>
 </ion-footer>

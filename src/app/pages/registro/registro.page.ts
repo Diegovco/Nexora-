@@ -4,13 +4,8 @@ import { HttpClient } from '@angular/common/http';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { IonHeader, IonToolbar, IonContent, IonFooter, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import {
-  homeOutline,
-  addCircleOutline,
-  documentTextOutline,
-  folderOpenOutline,
-  checkmarkDoneOutline
-} from 'ionicons/icons';
+import { homeOutline, addCircleOutline, documentTextOutline, folderOpenOutline, checkmarkDoneOutline, cubeOutline, scanOutline } from 'ionicons/icons';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-registro',
@@ -29,7 +24,7 @@ import {
   ]
 })
 export class RegistroPage implements OnInit {
-  private apiUrl = 'http://localhost:5000';
+  private apiUrl = environment.apiUrl;
   colaAprobadas: any[] = [];
   cargando = false;
 
@@ -38,13 +33,7 @@ export class RegistroPage implements OnInit {
     private cdr: ChangeDetectorRef,
     private zone: NgZone
   ) {
-    addIcons({
-      homeOutline,
-      addCircleOutline,
-      documentTextOutline,
-      folderOpenOutline,
-      checkmarkDoneOutline
-    });
+    addIcons({ homeOutline, addCircleOutline, documentTextOutline, folderOpenOutline, checkmarkDoneOutline, cubeOutline, scanOutline });
   }
 
   ngOnInit() {

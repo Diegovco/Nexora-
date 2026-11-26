@@ -373,38 +373,3 @@ ion-toolbar {
     }
   }
 }
-
-/* ==================== AJUSTES PARA LA API (api-python) ==================== */
-.card-actions {
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.estado-espera {
-  margin: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-
-  ion-icon {
-    font-size: 13px;
-  }
-}
-
-.btn-cancelar-res:disabled {
-  opacity: 0.5;
-}
-
-.texto-rechazo {
-  color: #f87171;
-}
-
-.historial-card {
-  opacity: 0.8;
-}
-
-.badge-estado {
-  text-transform: capitalize;
-}

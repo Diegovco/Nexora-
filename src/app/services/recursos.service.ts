@@ -1,101 +1,81 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
-import type { Observable} from 'rxjs';
-import { tap } from 'rxjs';
+import { Injectable } from '@angular/core';
 
-import { environment } from '../../environments/environment';
-import type { CategoriaRecurso, EstadoRecurso, Horario, Recurso } from '../models/computo.model';
-
-export interface DatosRecurso {
+export interface Recurso {
+  codigo: string;
   nombre: string;
-  categoria: CategoriaRecurso;
+  categoria: string;   // 'Laboratorio', 'Libro' o 'Equipo AV'
   ubicacion: string;
-  estado: EstadoRecurso;
-  equipos: number;
-  horario: Horario;
+  estado: string;      // 'Disponible', 'Prestado' o 'Mantenimiento'
+  cantidad: number;
   descripcion: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class RecursosService {
-  private readonly http = inject(HttpClient);
-  private readonly base = `${environment.apiBaseUrl}/computo/recursos`;
-  private readonly cache = signal<Recurso[]>([]);
 
-  readonly recursos = this.cache.asReadonly();
+  // Datos de ejemplo (después vendrán de la API)
+  private recursos: Recurso[] = [
+    { codigo: 'LAB-002', nombre: 'Laboratorio de Cómputo 2', categoria: 'Laboratorio', ubicacion: 'Edificio B', estado: 'Disponible', cantidad: 1, descripcion: '30 equipos' },
+    { codigo: 'AV-0041', nombre: 'Proyector Epson X41', categoria: 'Equipo AV', ubicacion: 'Almacén AV', estado: 'Prestado', cantidad: 1, descripcion: 'Incluye cable HDMI' },
+    { codigo: 'LIB-1187', nombre: 'Estructuras de datos en Java', categoria: 'Libro', ubicacion: 'Biblioteca', estado: 'Disponible', cantidad: 3, descripcion: '' },
+    { codigo: 'LAB-005', nombre: 'Laboratorio de Redes', categoria: 'Laboratorio', ubicacion: 'Edificio C', estado: 'Mantenimiento', cantidad: 1, descripcion: '' }
+  ];
 
-  private get encabezadosAdmin(): HttpHeaders {
-    return new HttpHeaders({ 'X-Api-Key': environment.adminApiKey });
+  obtenerTodos(): Recurso[] {
+    return this.recursos;
   }
 
-  listar(categoria = 'Todos', texto = ''): Observable<Recurso[]> {
-    const params: Record<string, string> = {};
-    if (categoria !== 'Todos') {
-      params['categoria'] = categoria;
-    }
-    if (texto.trim()) {
-      params['texto'] = texto.trim();
-    }
-    return this.http.get<Recurso[]>(this.base, { params }).pipe(tap((lista) => this.cache.set(lista)));
-  }
-
-  obtenerPorCodigo(codigo: string): Observable<Recurso> {
-    return this.http.get<Recurso>(`${this.base}/${codigo}`);
-  }
-
-  buscarEnCache(codigo: string): Recurso | undefined {
-    return this.cache().find((recurso) => recurso.codigo === codigo);
-  }
-
-  crear(datos: DatosRecurso & { codigo?: string }): Observable<Recurso> {
-    return this.http.post<Recurso>(this.base, datos, { headers: this.encabezadosAdmin });
-  }
-
-  actualizar(codigo: string, datos: Partial<DatosRecurso>): Observable<Recurso> {
-    return this.http.patch<Recurso>(`${this.base}/${codigo}`, datos, {
-      headers: this.encabezadosAdmin,
-    });
-  }
-
-  cambiarEstado(codigo: string, estado: 'Disponible' | 'Mantenimiento'): Observable<Recurso> {
-    return this.http.patch<Recurso>(`${this.base}/${codigo}/estado`, { estado }, { headers: this.encabezadosAdmin });
-  }
-
-  eliminar(codigo: string): Observable<{ eliminado: string }> {
-    return this.http.delete<{ eliminado: string }>(`${this.base}/${codigo}`, {
-      headers: this.encabezadosAdmin,
-    });
-  }
-
-  generarCodigo(categoria: CategoriaRecurso, lista: Recurso[] = this.cache()): string {
-    let prefijo = 'AV';
-    if (categoria === 'Laboratorio') {
-      prefijo = 'LAB';
-    }
-    if (categoria === 'Libro') {
-      prefijo = 'LIB';
-    }
-
-    let mayor = 0;
-    for (const recurso of lista) {
-      const partes = recurso.codigo.split('-');
-      if (partes[0] === prefijo) {
-        const numero = Number(partes[1]);
-        if (!Number.isNaN(numero) && numero > mayor) {
-          mayor = numero;
-        }
+  buscarPorCodigo(codigo: string): Recurso | null {
+    for (let i = 0; i < this.recursos.length; i++) {
+      if (this.recursos[i].codigo === codigo) {
+        return this.recursos[i];
       }
     }
-    return `${prefijo}-${String(mayor + 1).padStart(3, '0')}`;
+    return null;
   }
 
+  agregar(recurso: Recurso) {
+    this.recursos.push(recurso);
+  }
+
+  eliminar(codigo: string) {
+    for (let i = 0; i < this.recursos.length; i++) {
+      if (this.recursos[i].codigo === codigo) {
+        this.recursos.splice(i, 1);
+        return;
+      }
+    }
+  }
+
+  // Crea el siguiente código según la categoría: LAB-006, LIB-1188, AV-0042...
+  // Si se le pasa la lista de recursos de la base de datos, usa esa lista.
+  generarCodigo(categoria: string, lista: Recurso[] = this.recursos): string {
+    let prefijo = 'AV';
+    if (categoria === 'Laboratorio') { prefijo = 'LAB'; }
+    if (categoria === 'Libro') { prefijo = 'LIB'; }
+
+    let mayor = 0;
+    let digitos = 3; // cuántos dígitos usan los códigos que ya existen (AV-0041 usa 4)
+    for (let i = 0; i < lista.length; i++) {
+      const partes = String(lista[i].codigo || '').split('-');
+      if (partes[0] === prefijo) {
+        const numero = Number(partes[1]);
+        if (!isNaN(numero) && numero > mayor) { mayor = numero; }
+        if (partes[1] && partes[1].length > digitos) { digitos = partes[1].length; }
+      }
+    }
+
+    let siguiente = String(mayor + 1);
+    while (siguiente.length < digitos) {
+      siguiente = '0' + siguiente;
+    }
+    return prefijo + '-' + siguiente;
+  }
+
+  // Devuelve la clase de color según el estado
   claseEstado(estado: string): string {
-    if (estado === 'Disponible') {
-      return 'disponible';
-    }
-    if (estado === 'Prestado') {
-      return 'prestado';
-    }
+    if (estado === 'Disponible') { return 'disponible'; }
+    if (estado === 'Prestado') { return 'prestado'; }
     return 'mantenimiento';
   }
 }

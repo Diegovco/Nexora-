@@ -5,19 +5,8 @@ import { HttpClient } from '@angular/common/http';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { IonHeader, IonToolbar, IonContent, IonFooter, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import {
-  homeOutline,
-  gridOutline,
-  scanCircleOutline,
-  scanOutline,
-  alertCircleOutline,
-  addCircleOutline,
-  documentTextOutline,
-  folderOpenOutline,
-  checkmarkDoneOutline,
-  sendOutline,
-  refreshOutline
-} from 'ionicons/icons';
+import { homeOutline, gridOutline, scanCircleOutline, scanOutline, alertCircleOutline, addCircleOutline, documentTextOutline, folderOpenOutline, checkmarkDoneOutline, sendOutline, refreshOutline, cubeOutline, receiptOutline } from 'ionicons/icons';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-reportes',
@@ -37,7 +26,7 @@ import {
   ]
 })
 export class ReportesPage implements OnInit {
-  private apiUrl = 'http://localhost:5000';
+  private apiUrl = environment.apiUrl;
 
   esAdmin = false;
   usuarioNombre = '';
@@ -61,19 +50,7 @@ export class ReportesPage implements OnInit {
     private cdr: ChangeDetectorRef,
     private zone: NgZone
   ) {
-    addIcons({
-      homeOutline,
-      gridOutline,
-      scanCircleOutline,
-      scanOutline,
-      alertCircleOutline,
-      addCircleOutline,
-      documentTextOutline,
-      folderOpenOutline,
-      checkmarkDoneOutline,
-      sendOutline,
-      refreshOutline
-    });
+    addIcons({ homeOutline, gridOutline, scanCircleOutline, scanOutline, alertCircleOutline, addCircleOutline, documentTextOutline, folderOpenOutline, checkmarkDoneOutline, sendOutline, refreshOutline, cubeOutline, receiptOutline });
   }
 
   ngOnInit() {
@@ -94,7 +71,7 @@ export class ReportesPage implements OnInit {
         this.usuarioMatricula = String(datos.strmatricula || datos.matricula || '').trim();
         const rol = String(datos.strrol || datos.rol || '').trim();
 
-        this.esAdmin = rol === 'Administrativo' || this.usuarioCorreo.toUpperCase().startsWith('A');
+        this.esAdmin = rol === 'Administrativo';
       } catch {}
     }
 

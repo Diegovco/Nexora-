@@ -208,3 +208,86 @@ ion-footer {
     }
   }
 }
+
+/* ==================== FOTO DEL RECURSO ==================== */
+.foto-vista {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #24354f;
+
+  img {
+    display: block;
+    width: 100%;
+    max-height: 240px;
+    object-fit: cover;
+  }
+}
+
+.foto-quitar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(9, 17, 30, 0.8);
+  color: #ffffff;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.foto-botones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+
+  .nx-boton-sec {
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+}
+
+/* ==================== ETIQUETA QR ==================== */
+.nx-tarjeta.etiqueta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background-color: #121e31;
+  border: 1px solid #24354f;
+  border-radius: 16px;
+  padding: 16px;
+
+  img {
+    width: 100%;
+    max-width: 260px;
+    border-radius: 10px;
+    background: #ffffff;
+  }
+
+  .nx-boton {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+}
+
+.etiqueta-aviso {
+  margin: 0;
+  color: #4ade80;
+  font-size: 13px;
+  text-align: center;
+}
+
+.botones .nx-boton:disabled {
+  opacity: 0.6;
+}

@@ -27,20 +27,10 @@ import {
   receiptOutline,
   alertCircleOutline
 } from 'ionicons/icons';
-import { RecursosService } from '../../services/recursos.service';
+import { RecursosService, Recurso } from '../../services/recursos.service';
+import { environment } from '../../../environments/environment';
 
-/** Forma del recurso que devuelve la API de la carpeta API/ (Flask). */
-interface RecursoBase {
-  codigo: string;
-  nombre: string;
-  categoria: string;
-  ubicacion: string;
-  estado: string;
-  cantidad: number;
-  descripcion: string;
-}
-
-export interface RecursoCatalogo extends RecursoBase {
+export interface RecursoCatalogo extends Recurso {
   _id?: string;
 }
 
@@ -65,7 +55,7 @@ export interface RecursoCatalogo extends RecursoBase {
   ]
 })
 export class CatalogoPage implements OnInit {
-  private apiUrl = 'http://localhost:5000';
+  private apiUrl = environment.apiUrl;
   todosLosRecursos: RecursoCatalogo[] = [];
   recursos: RecursoCatalogo[] = [];
   texto = '';

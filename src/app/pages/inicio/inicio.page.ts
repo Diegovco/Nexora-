@@ -15,32 +15,11 @@ import {
   IonPopover
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import {
-  notificationsOutline,
-  personOutline,
-  logOutOutline,
-  homeOutline,
-  gridOutline,
-  alertCircleOutline,
-  receiptOutline,
-  documentTextOutline,
-  checkmarkDoneOutline,
-  addCircleOutline,
-  ellipsisVertical
-} from 'ionicons/icons';
+import { notificationsOutline, personOutline, logOutOutline, homeOutline, gridOutline, alertCircleOutline, receiptOutline, documentTextOutline, checkmarkDoneOutline, addCircleOutline, ellipsisVertical, cubeOutline, scanOutline } from 'ionicons/icons';
+import { Recurso } from '../../services/recursos.service';
+import { environment } from '../../../environments/environment';
 
-/** Forma del recurso que devuelve la API de la carpeta API/ (Flask). */
-interface RecursoBase {
-  codigo: string;
-  nombre: string;
-  categoria: string;
-  ubicacion: string;
-  estado: string;
-  cantidad: number;
-  descripcion: string;
-}
-
-export interface RecursoInicio extends RecursoBase {
+export interface RecursoInicio extends Recurso {
   _id?: string;
 }
 
@@ -71,7 +50,7 @@ export interface EstadisticaCategoria {
   ],
 })
 export class InicioPage implements OnInit {
-  private apiUrl = 'http://localhost:5000';
+  private apiUrl = environment.apiUrl;
   disponibles: RecursoInicio[] = [];
   esEstudiante = true;
 
@@ -102,19 +81,7 @@ export class InicioPage implements OnInit {
     private cdr: ChangeDetectorRef,
     private zone: NgZone
   ) {
-    addIcons({
-      'notifications-outline': notificationsOutline,
-      'person-outline': personOutline,
-      'log-out-outline': logOutOutline,
-      'home-outline': homeOutline,
-      'grid-outline': gridOutline,
-      'alert-circle-outline': alertCircleOutline,
-      'receipt-outline': receiptOutline,
-      'document-text-outline': documentTextOutline,
-      'checkmark-done-outline': checkmarkDoneOutline,
-      'add-circle-outline': addCircleOutline,
-      'ellipsis-vertical': ellipsisVertical
-    });
+    addIcons({ 'notifications-outline': notificationsOutline, 'person-outline': personOutline, 'log-out-outline': logOutOutline, 'home-outline': homeOutline, 'grid-outline': gridOutline, 'alert-circle-outline': alertCircleOutline, 'receipt-outline': receiptOutline, 'document-text-outline': documentTextOutline, 'checkmark-done-outline': checkmarkDoneOutline, 'add-circle-outline': addCircleOutline, 'ellipsis-vertical': ellipsisVertical, cubeOutline, scanOutline });
   }
 
   ngOnInit() {
@@ -177,7 +144,7 @@ export class InicioPage implements OnInit {
       const rol = (user.strrol || user.rol || '').trim();
       this.correoUsuario = (user.strcorreoUsuario || user.correo || user.email || '').trim();
       this.matriculaUsuario = (user.strmatricula || user.matricula || '').trim();
-      this.esEstudiante = !(rol === 'Administrativo' || this.correoUsuario.startsWith('A'));
+      this.esEstudiante = rol !== 'Administrativo';
 
       const nombreCompleto = (
         user.strnombreUsuario ||

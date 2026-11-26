@@ -9,72 +9,50 @@
       <span class="nx-insignia">Administrador</span>
     </div>
 
-    <input
-      class="nx-input"
-      type="search"
-      placeholder="Buscar por nombre o código"
-      aria-label="Buscar recurso"
-      [value]="texto()"
-      (input)="cambiarTexto($event)"
-    />
+    <input class="nx-input" type="search" placeholder="Buscar por nombre o código"
+           aria-label="Buscar recurso" [(ngModel)]="texto" (ngModelChange)="filtrar()">
 
     <div class="nx-chips">
-      @for (opcion of categorias; track opcion) {
-        <button type="button" class="nx-chip" [class.activo]="categoria() === opcion" (click)="elegirCategoria(opcion)">
-          {{ opcion }}
-        </button>
+      @for (c of categorias; track c) {
+        <button class="nx-chip" [class.activo]="categoria === c" (click)="elegirCategoria(c)">{{ c }}</button>
       }
     </div>
 
-    <button type="button" class="nx-boton" routerLink="/nuevo-recurso">
+    <button class="nx-boton" routerLink="/nuevo-recurso">
       <ion-icon name="add-outline"></ion-icon> Nuevo recurso
     </button>
 
-    @if (mensaje()) {
-      <p class="cx-mensaje exito">{{ mensaje() }}</p>
-    }
-    @if (error()) {
-      <p class="cx-mensaje error">{{ error() }}</p>
-    }
+    <p class="nx-gris">{{ recursos.length }} recursos</p>
 
-    <p class="nx-gris">{{ recursos().length }} recursos</p>
-
-    @if (cargando()) {
-      <p class="nx-gris">Cargando inventario...</p>
-    }
-
-    @for (recurso of recursos(); track recurso.codigo) {
+    @for (r of recursos; track r.codigo) {
       <div class="nx-tarjeta recurso">
         <div class="nx-encabezado">
-          <div>
-            <strong>{{ recurso.nombre }}</strong>
-            <p class="nx-gris">{{ recurso.codigo }} · {{ recurso.ubicacion }}</p>
+          <div class="recurso-info">
+            @if (r.foto) {
+              <img class="recurso-foto" [src]="r.foto" [alt]="r.nombre" />
+            } @else {
+              <div class="recurso-foto sin-foto"><ion-icon name="image-outline"></ion-icon></div>
+            }
+            <div>
+              <strong>{{ r.nombre }}</strong>
+              <p class="nx-gris">{{ r.codigo }} · {{ r.ubicacion }}</p>
+            </div>
           </div>
-          <span class="nx-estado {{ claseEstado(recurso.estado) }}">{{ recurso.estado }}</span>
+          <span class="nx-estado {{ claseEstado(r.estado) }}">{{ r.estado }}</span>
         </div>
         <div class="acciones">
-          <button type="button" class="nx-boton-sec" (click)="editar(recurso)">
-            <ion-icon name="create-outline"></ion-icon>
-            Editar
+          <button class="nx-boton-sec" (click)="editar(r)">Editar</button>
+          <button class="nx-boton-sec" (click)="descargarQr(r)">
+            <ion-icon name="qr-code-outline"></ion-icon> QR
           </button>
-          <button
-            type="button"
-            class="nx-boton-sec eliminar"
-            [disabled]="recurso.estado === 'Prestado'"
-            (click)="eliminar(recurso)"
-          >
-            <ion-icon name="trash-outline"></ion-icon>
-            Eliminar
-          </button>
+          <button class="nx-boton-sec eliminar" [disabled]="r.estado === 'Prestado'" (click)="eliminar(r)">Eliminar</button>
         </div>
-        @if (recurso.estado === 'Prestado') {
+        @if (r.estado === 'Prestado') {
           <p class="aviso">No se puede eliminar: tiene un préstamo activo.</p>
         }
       </div>
     } @empty {
-      @if (!cargando() && !error()) {
-        <p class="nx-gris">No hay recursos con ese filtro.</p>
-      }
+      <p class="nx-gris">No hay recursos con ese filtro.</p>
     }
 
   </div>
@@ -82,21 +60,25 @@
 
 <ion-footer class="ion-no-border">
   <nav class="nx-barra">
-    <a routerLink="/inicio" routerLinkActive="activa" [routerLinkActiveOptions]="{ exact: true }">
-      <ion-icon name="home-outline"></ion-icon>
-      <span>Inicio</span>
-    </a>
-    <a routerLink="/nuevo-recurso" routerLinkActive="activa">
-      <ion-icon name="add-circle-outline"></ion-icon>
-      <span>Recurso</span>
-    </a>
-    <a routerLink="/gestion-reservas" routerLinkActive="activa">
-      <ion-icon name="document-text-outline"></ion-icon>
-      <span>Gestión</span>
-    </a>
-    <a routerLink="/registros" routerLinkActive="activa">
-      <ion-icon name="checkmark-done-outline"></ion-icon>
-      <span>Aprobadas</span>
-    </a>
+  <a routerLink="/inicio" routerLinkActive="activa" [routerLinkActiveOptions]="{ exact: true }">
+        <ion-icon name="home-outline"></ion-icon>
+        <span>Inicio</span>
+      </a>
+      <a routerLink="/admin-recursos" routerLinkActive="activa">
+        <ion-icon name="cube-outline"></ion-icon>
+        <span>Recursos</span>
+      </a>
+      <a routerLink="/escanear" routerLinkActive="activa">
+        <ion-icon name="scan-outline"></ion-icon>
+        <span>Escanear</span>
+      </a>
+      <a routerLink="/gestion-reservas" routerLinkActive="activa">
+        <ion-icon name="document-text-outline"></ion-icon>
+        <span>Gestión</span>
+      </a>
+      <a routerLink="/registros" routerLinkActive="activa">
+        <ion-icon name="checkmark-done-outline"></ion-icon>
+        <span>Aprobadas</span>
+      </a>
   </nav>
 </ion-footer>

@@ -358,16 +358,3 @@ ion-toolbar {
     }
   }
 }
-
-/* ==================== AJUSTES PARA LA API (api-python) ==================== */
-.badge-estado {
-  text-transform: capitalize;
-}
-
-.acciones-grid.una-accion {
-  grid-template-columns: 1fr;
-}
-
-.acciones-grid button:disabled {
-  opacity: 0.5;
-}

@@ -1,23 +1,20 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonToolbar } from '@ionic/angular';
-import { addIcons } from 'ionicons';
 import {
-  addCircleOutline,
-  barChartOutline,
-  checkmarkCircleOutline,
-  checkmarkDoneOutline,
-  closeCircleOutline,
-  documentTextOutline,
-  homeOutline,
-  refreshOutline,
-} from 'ionicons/icons';
-import { forkJoin } from 'rxjs';
-
-import type { Recurso, Reserva } from '../../models/computo.model';
-import { mensajeDeError } from '../../services/api-errores';
-import { ComputoService } from '../../services/computo.service';
-import { fechaCorta } from '../../utils/fechas';
+  IonHeader,
+  IonToolbar,
+  IonContent,
+  IonFooter,
+  IonIcon,
+  IonButtons,
+  IonButton
+} from '@ionic/angular';
+import { addIcons } from 'ionicons';
+import { refreshOutline, homeOutline, addCircleOutline, documentTextOutline, checkmarkDoneOutline, barChartOutline, cubeOutline, scanOutline } from 'ionicons/icons';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-gestion-reservas',
@@ -25,140 +22,204 @@ import { fechaCorta } from '../../utils/fechas';
   styleUrls: ['./gestion-reservas.page.scss'],
   standalone: true,
   imports: [
+    CommonModule,
+    FormsModule,
     RouterLink,
     RouterLinkActive,
     IonHeader,
     IonToolbar,
-    IonButtons,
-    IonButton,
     IonContent,
     IonFooter,
     IonIcon,
-  ],
+    IonButtons,
+    IonButton
+  ]
 })
-export class GestionReservasPage {
-  private readonly computo = inject(ComputoService);
+export class GestionReservasPage implements OnInit {
+  private apiUrl = environment.apiUrl;
 
-  readonly pendientes = signal<Reserva[]>([]);
-  readonly laboratorios = signal<Recurso[]>([]);
-  readonly cargando = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly mensaje = signal<string | null>(null);
-  readonly procesando = signal<string | null>(null);
-  readonly filtroTexto = signal('');
+  todasLasReservas: any[] = [];
+  reservasFiltradas: any[] = [];
+  filtroMatricula = '';
+  filtroTexto = '';
+  cargando = false;
 
-  readonly pendientesFiltradas = computed(() => {
-    const texto = this.filtroTexto().trim().toLowerCase();
-    if (!texto) {
-      return this.pendientes();
+  constructor(
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef,
+    private zone: NgZone
+  ) {
+    addIcons({ refreshOutline, homeOutline, addCircleOutline, documentTextOutline, checkmarkDoneOutline, barChartOutline, cubeOutline, scanOutline });
+  }
+
+  ngOnInit() {
+    this.cargarTodasLasReservas();
+  }
+
+  ionViewWillEnter() {
+    this.cargarTodasLasReservas();
+  }
+
+  private extraerId(rawId: any): string {
+    if (!rawId) return '';
+    if (typeof rawId === 'object' && rawId.$oid) return String(rawId.$oid).trim();
+    return String(rawId).trim();
+  }
+
+  private normalizarFechaISO(raw: any): string {
+    const s = String(raw || '').trim().slice(0, 10);
+    if (!s) return '9999-12-31';
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+      const [d, m, y] = s.split('/');
+      return `${y}-${m}-${d}`;
     }
-    return this.pendientes().filter((reserva) =>
-      [reserva.usuarioNombre, reserva.recursoNombre, reserva.folio, reserva.estado]
-        .join(' ')
-        .toLowerCase()
-        .includes(texto),
-    );
-  });
+    return s;
+  }
 
-  constructor() {
-    addIcons({
-      addCircleOutline,
-      barChartOutline,
-      checkmarkCircleOutline,
-      checkmarkDoneOutline,
-      closeCircleOutline,
-      documentTextOutline,
-      homeOutline,
-      refreshOutline,
+  private ordenarFIFO(lista: any[]) {
+    lista.sort((a, b) => {
+      const pendA = a.estado.toLowerCase() === 'pendiente' ? 0 : 1;
+      const pendB = b.estado.toLowerCase() === 'pendiente' ? 0 : 1;
+      if (pendA !== pendB) return pendA - pendB;
+
+      const keyA = `${a.fecha} ${a.horaInicio}`;
+      const keyB = `${b.fecha} ${b.horaInicio}`;
+      const cmpFecha = keyA.localeCompare(keyB);
+      if (cmpFecha !== 0) return cmpFecha;
+
+      return a.ordenOriginal - b.ordenOriginal;
     });
   }
 
-  ionViewWillEnter(): void {
-    this.cargar();
+  cargarTodasLasReservas() {
+    this.cargando = true;
+    this.http.get<any>(`${this.apiUrl}/getReservas`).subscribe({
+      next: (resp) => {
+        this.zone.run(() => {
+          const crudas: any[] = Array.isArray(resp) ? resp : (resp?.Respuesta || []);
+
+          const normalizadas = crudas.map((r: any, idx: number) => ({
+            _id: this.extraerId(r._id || r.reserva_id),
+            codigoRecurso: String(r.codigoRecurso || r.codigo || r.strcodigo || 'S/C').trim(),
+            nombreRecurso: String(
+              r.nombreRecurso ||
+              r.strnombreRecurso ||
+              r.recurso ||
+              r.nombre ||
+              'Recurso'
+            ).trim(),
+            ubicacion: String(r.ubicacion || r.strubicacion || 'Campus UTC').trim(),
+            solicitante: String(
+              r.solicitante ||
+              r.matricula ||
+              r.strmatricula ||
+              r.correo ||
+              r.strcorreoUsuario ||
+              'Sin matrícula'
+            ).trim(),
+            matricula: String(r.matricula || r.strmatricula || r.solicitante || '').trim(),
+            correo: String(r.correo || r.strcorreoUsuario || '').trim(),
+            fecha: this.normalizarFechaISO(r.fecha || r.strfecha || r.fechaReserva),
+            horaInicio: String(r.horaInicio || r.strhoraInicio || '00:00').trim(),
+            horaFin: String(r.horaFin || r.strhoraFin || '').trim(),
+            motivo: String(r.motivo || r.strmotivo || '').trim(),
+            estado: String(r.estado || r.strestado || 'Pendiente').trim(),
+            aprobadoPor: String(r.aprobadoPor || '').trim(),
+            ordenOriginal: idx
+          }));
+
+          this.ordenarFIFO(normalizadas);
+          this.todasLasReservas = normalizadas;
+          this.aplicarFiltro();
+          this.cargando = false;
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        console.error('Error al cargar todas las reservas:', err);
+        this.zone.run(() => {
+          this.todasLasReservas = [];
+          this.reservasFiltradas = [];
+          this.cargando = false;
+          this.cdr.detectChanges();
+        });
+      }
+    });
   }
 
-  cargar(): void {
-    this.cargando.set(true);
-    this.error.set(null);
-    forkJoin({
-      pendientes: this.computo.reservasPendientes(),
-      laboratorios: this.computo.listarRecursos('Laboratorio'),
+  aplicarFiltro() {
+    const mat = this.filtroMatricula.trim().toLowerCase();
+    const q = this.filtroTexto.trim().toLowerCase();
+
+    this.reservasFiltradas = this.todasLasReservas.filter((r) => {
+      const coincideMatricula =
+        !mat ||
+        r.matricula.toLowerCase().includes(mat) ||
+        r.solicitante.toLowerCase().includes(mat) ||
+        r.correo.toLowerCase().includes(mat);
+
+      const coincideTexto =
+        !q ||
+        r.solicitante.toLowerCase().includes(q) ||
+        r.nombreRecurso.toLowerCase().includes(q) ||
+        r.codigoRecurso.toLowerCase().includes(q) ||
+        r.estado.toLowerCase().includes(q) ||
+        r.fecha.includes(q);
+
+      return coincideMatricula && coincideTexto;
+    });
+  }
+
+  limpiarFiltros() {
+    this.filtroMatricula = '';
+    this.filtroTexto = '';
+    this.aplicarFiltro();
+  }
+
+  private obtenerAdminActivo(): string {
+    const raw = localStorage.getItem('nexora_active_user') || localStorage.getItem('usuarioNexora');
+    if (!raw) return '';
+    try {
+      const datos = JSON.parse(raw);
+      return String(
+        datos.strcorreoUsuario ||
+        datos.correo ||
+        datos.email ||
+        datos.strmatricula ||
+        datos.matricula ||
+        ''
+      ).trim();
+    } catch {
+      return '';
+    }
+  }
+
+  cambiarEstado(r: any, nuevoEstado: 'Aprobada' | 'Rechazada') {
+    const idReal = this.extraerId(r._id);
+    if (!idReal) {
+      alert('No se encontró el ID de la reserva.');
+      return;
+    }
+
+    const adminActual = this.obtenerAdminActivo();
+
+    this.http.put(`${this.apiUrl}/reservas/${encodeURIComponent(idReal)}`, {
+      estado: nuevoEstado,
+      aprobadoPor: adminActual
     }).subscribe({
-      next: ({ pendientes, laboratorios }) => {
-        this.pendientes.set(pendientes.reservas);
-        this.laboratorios.set(laboratorios);
-        this.cargando.set(false);
-      },
-      error: (error) => {
-        this.error.set(mensajeDeError(error));
-        this.cargando.set(false);
-      },
-    });
-  }
-
-  aprobar(reserva: Reserva): void {
-    this.procesando.set(reserva.id);
-    this.mensaje.set(null);
-    this.computo.aprobar(reserva.id).subscribe({
       next: () => {
-        this.procesando.set(null);
-        this.mensaje.set(`Reserva ${reserva.folio} aprobada. Se avisó a ${reserva.usuarioNombre}.`);
-        this.cargar();
+        this.zone.run(() => {
+          r.estado = nuevoEstado;
+          r.aprobadoPor = adminActual;
+          this.ordenarFIFO(this.todasLasReservas);
+          this.aplicarFiltro();
+          this.cdr.detectChanges();
+        });
       },
-      error: (error) => {
-        this.procesando.set(null);
-        this.error.set(mensajeDeError(error));
-      },
+      error: (err) => {
+        console.error('Error al actualizar el estado:', err);
+        alert('No se pudo actualizar el estado de la reserva.');
+      }
     });
-  }
-
-  rechazar(reserva: Reserva): void {
-    const motivo = prompt(`Motivo del rechazo para ${reserva.folio}:`);
-    if (!motivo || motivo.trim().length < 3) {
-      return;
-    }
-
-    this.procesando.set(reserva.id);
-    this.mensaje.set(null);
-    this.computo.rechazar(reserva.id, motivo.trim()).subscribe({
-      next: () => {
-        this.procesando.set(null);
-        this.mensaje.set(`Reserva ${reserva.folio} rechazada. El horario quedó libre.`);
-        this.cargar();
-      },
-      error: (error) => {
-        this.procesando.set(null);
-        this.error.set(mensajeDeError(error));
-      },
-    });
-  }
-
-  alternarEstado(laboratorio: Recurso): void {
-    const nuevo = laboratorio.estado === 'Disponible' ? 'Mantenimiento' : 'Disponible';
-    if (!confirm(`¿Cambiar ${laboratorio.nombre} a ${nuevo}? Se avisará a las reservas afectadas.`)) {
-      return;
-    }
-
-    this.procesando.set(laboratorio.codigo);
-    this.mensaje.set(null);
-    this.computo.cambiarEstadoLaboratorio(laboratorio.codigo, nuevo).subscribe({
-      next: () => {
-        this.procesando.set(null);
-        this.mensaje.set(`${laboratorio.nombre} ahora está en ${nuevo}.`);
-        this.cargar();
-      },
-      error: (error) => {
-        this.procesando.set(null);
-        this.error.set(mensajeDeError(error));
-      },
-    });
-  }
-
-  cambiarFiltro(evento: Event): void {
-    this.filtroTexto.set((evento.target as HTMLInputElement).value);
-  }
-
-  fechaDe(reserva: Reserva): string {
-    return fechaCorta(reserva.fecha);
   }
 }
