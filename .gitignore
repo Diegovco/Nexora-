@@ -77,3 +77,4 @@ Thumbs.db
 
 # Configuración privada de la API Flask (clave de administrador, conexión a MongoDB)
 API/.env
+*.pyc
